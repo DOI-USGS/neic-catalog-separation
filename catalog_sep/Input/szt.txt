@@ -1,0 +1,15 @@
+Arc No.,Subduction Zone Arc,Slab2 Code,N,Ss (km),Sd (km),Sw (km),δ (º),Φ (º),λ (º),Mmax
+1,Aleutians,alu,470,12,45,124,14,265,124,92 
+3,Central America,cam, 701,11,42,91,20,301,86,81 
+11,Izu-Bonin,izu,218,10,37,96,15,174,93,75 
+12,Kermadec,ker,707,10,47,129,16,205,93,83 
+13,Kuril,kur,1162,13,54,138,15,227,89,91 
+15,Manila,man,90,14,48,69,29,130,89,72 
+18,New Guinea,png,81,10,41,191,9,106,89,82 
+19,Philippines,phi,121,11,49,79,28,142,76,78 
+21,Ryukyu,ryu,265,13,47,111,17,236,99,88 
+22,South America,sam,1370,11,45,118,15,356,85,95 
+23,Scotia,sco,70,11,46,87,17,175,109,75 
+24,Solomon Islands,sol,627,12,53,77,33,287,96,80 
+26,Sumatra/Java,sum,706,11,53,153,17,281,100,91 
+27,Vanuatu,van,467,11,49,75,29,322,90,80 
