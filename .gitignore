@@ -1,0 +1,7 @@
+*.pyc
+.DS_Store
+__pycache__
+*_eqtype.csv
+*.png
+*.out
+*.xyz
