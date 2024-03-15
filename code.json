@@ -11,15 +11,15 @@
       "licenses": [
         {
           "name": "Public Domain, CC0-1.0",
-          "URL": "https://code.usgs.gov/ghsc/neic/catalog_separation/-/blob/main/LICENSE.md"
+          "URL": "https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation/-/blob/main/LICENSE.md"
         }
       ]
     },
 
-    "homepageURL": "https://code.usgs.gov/ghsc/neic/catalog_separation",
-    "downloadURL": "https://code.usgs.gov/ghsc/neic/catalog_separation.git",
-    "disclaimerURL": "https://code.usgs.gov/ghsc/neic/catalog_separation/-/blob/master/DISCLAIMER.md",
-    "repositoryURL": "https://code.usgs.gov/ghsc/neic/catalog_separation.git",
+    "homepageURL": "https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation",
+    "downloadURL": "https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation.git",
+    "disclaimerURL": "https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation/-/blob/master/DISCLAIMER.md",
+    "repositoryURL": "https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation.git",
     "vcs": "git",
 
     "laborHours": 80,
@@ -43,7 +43,7 @@
     },
 
     "date": {
-      "metadataLastUpdated": "2024-03-12"
+      "metadataLastUpdated": "2024-03-15"
     }
   }
 ]
