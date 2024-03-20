@@ -17,7 +17,7 @@
     },
 
     "homepageURL": "https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation",
-    "downloadURL": "https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation.git",
+    "downloadURL": "https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation/-/archive/main/neic-catalog-segregation-main.zip",
     "disclaimerURL": "https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation/-/raw/main/DISCLAIMER.md",
     "repositoryURL": "https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation.git",
     "vcs": "git",
