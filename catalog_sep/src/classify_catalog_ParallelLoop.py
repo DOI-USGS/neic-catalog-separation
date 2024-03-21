@@ -11,6 +11,7 @@ import classify_catalog_Funcs as funcs
 
 def classify_eqs(
     smod,
+    nshm,
     working_dir,
     dataframe,
     dlim,
@@ -55,11 +56,13 @@ def classify_eqs(
 
     # If an EQ occurs in a slab region where there is a vertical/titled/overturned slab, then the published slab2 sup csv file must be used
     # find nearest lon,lat to EQ lon,lat and extract the corresponding tilted slab depth, strike, and dip
-    # if np.isnan(sdep):
-    # handle events outside of the SZ:
+    if np.isnan(sdep):
+        if smod == "man" or smod == "ker" or smod == "izu" or smod == "sol":
+            sdep, sstr, sdip = funcs.overturned_slab(smod, working_dir, lon, lat)
+    # For USGS NSHM catalogs, handle events outside of the SZ
     # here, slab depth does not exist & we are not in an overturned slab region
     # So, the event is not slab & not interface, this is crustal (maybe mantle)
-    if np.isnan(sstr) and np.isnan(sdep) and np.isnan(sdip):
+    if nshm and np.isnan(sdep):
         p_int = 0
         p_crustal = 1
         p_slab = 0
@@ -69,8 +72,6 @@ def classify_eqs(
         sdip = 999
         sunc = 999
         s1 = dataframe.S1[i]
-        if smod == "man" or smod == "ker" or smod == "izu" or smod == "sol":
-            sdep, sstr, sdip = funcs.overturned_slab(smod, working_dir, lon, lat)
     else:
         # get difference between slab & EQ
         ddiff = np.abs(dataframe.depth[i] - sdep)
@@ -202,12 +203,20 @@ def classify_eqs(
             dataframe.depth[i],
         )
 
-    # Flag events that may be mantle events (not determining probability, just flagging possible mantle events)
+    # Flag events that may be mantle events (not determining probability, just flagging possible mantle events) - not used for USGS NSHM catalogs
     # This is tagged by adding a 'm' for mantle to eqloc, so that the highest probability is also still known
     # These events usually have extensional focal mechanisms. From a Frolich diagram, this would be Ppl > 45 or Tpl > 20 (also based on looking at test events)
-    if eqloc != "i":
+    if not nshm and eqloc != "i":
         eqloc = funcs.flag_mantle(
-            s1, sstr, depth[i], dlim, sdep, sunc, Ppl[i], Tpl[i], eqloc, dlim
+            s1,
+            sstr,
+            dataframe.depth[i],
+            dlim,
+            sdep,
+            sunc,
+            dataframe.Ppl[i],
+            dataframe.Tpl[i],
+            eqloc,
         )
     # Determine quality (qual) of classification
     qual = funcs.determine_quality(eqloc, p_crustal, p_slab, p_int, s1, sstr)

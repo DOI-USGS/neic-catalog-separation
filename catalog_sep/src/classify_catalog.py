@@ -15,7 +15,7 @@ import classify_catalog_ParallelLoop as classify
 FLEX = 15  # buffer
 
 
-def classify_catalog(smod):
+def classify_catalog(smod, nshm):
     """
     Reads in files and sets up arguments to the function classify_catalog_ParallelLoop, which runs in parallel and determines probability that an event occured in the upper plate (crustal), lower plate (intraslab), or along the subduction interface.
     """
@@ -65,6 +65,7 @@ def classify_catalog(smod):
     loop = partial(
         classify.classify_eqs,
         smod,
+        nshm,
         working_dir,
         dataframe,
         dlim,
@@ -74,9 +75,18 @@ def classify_catalog(smod):
     )
     # iterate function through lengh of ID/catalog
     indices = [i for i in range(len(id_no))]
-    pool.map_async(loop, indices, 1)
+    pool.map_async(
+        loop,
+        indices,
+        chunksize=1,
+        error_callback=custom_error_callback,
+    )
     pool.close()
     pool.join()
+
+
+def custom_error_callback(error):
+    print(f"ERROR: {error}")
 
 
 if __name__ == "__main__":
@@ -119,9 +129,15 @@ if __name__ == "__main__":
     argparser.add_argument(
         "slab2_region",
         help="Name Slab2 region pertaining to the earthquake catalog is required",
-        metavar="slab2_region",
+    )
+    argparser.add_argument(
+        "--nshm",
+        default="False",
+        choices=["True", "False"],
+        help="Specify True if running for a NSHM catalog. This will classify earthquakes outside of the specified Slab2 region. Default is False.",
     )
 
     pargs, unknown = argparser.parse_known_args()
     smod = pargs.slab2_region
-    classify_catalog(smod)
+    nshm = pargs.nshm
+    classify_catalog(smod, nshm)
