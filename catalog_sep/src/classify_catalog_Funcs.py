@@ -375,14 +375,9 @@ def flag_mantle(s1, sstr, depth, dlim, sdep, sunc, Ppl, Tpl, eqloc):
         eqloc (str): most likely earthquake classification with 'm' (meaning 'mantle') appended to the end of the classification
     """
     if s1 > 0 and sstr > 0:
-        if (
-            depth > dlim
-            and depth <= (sdep - sunc)
-            and Ppl > 45
-            or depth > dlim
-            and depth <= (sdep - sunc)
-            and Tpl > 20
-        ):
+        if depth > dlim and depth <= (sdep - sunc) and Ppl > 45:
+            eqloc = "m" + eqloc
+        elif depth > dlim and depth <= (sdep - sunc) and Tpl > 20:
             eqloc = "m" + eqloc
     elif depth > dlim and depth <= (sdep - sunc):
         eqloc = "m" + eqloc
@@ -400,21 +395,25 @@ def determine_quality(eqloc, p_crustal, p_slab, p_int, s1, sstr):
         eqloc (str): most likely earthquake classification
         p_crustal (float): probability the earthquake is crustal
         p_slab (float): probability the earthquake is intraslab
-        p_int (float): probability the earthquake occured along the subduction interface
+        p_int (float): probability the earthquake occurred along the subduction interface
         s1 (float): earthquakes strike at nodal plane 1
         sstr (float): slabs strike at the earthquakes location
     Returns:
-        qual (str): quality/grade of earthquake classifrication (A, B, C, D)
+        qual (str): quality/grade of earthquake classification (A, B, C, D)
     """
     if eqloc == "u":
         prob = p_crustal
-    if eqloc == "l":
+    elif eqloc == "l":
         prob = p_slab
-    if eqloc == "i":
+    elif eqloc == "i":
         prob = p_int
     if "eq" in eqloc:
         qual = "D"
-    elif s1 > 0 and sstr > 0:
+        return qual
+    if "m" in eqloc:
+        qual = "D"
+        return qual
+    if s1 > 0 and sstr > 0:
         if prob >= 80:
             qual = "A"
         elif prob >= 60 and prob < 80:
@@ -504,4 +503,10 @@ def write_file(df, outfile):
     # only keep rows where p_crustal is not NaN, else entire df will be output
     df = df[df["p_crustal"].notna()]
     # save to csv file
-    df.to_csv(f"{outfile}.csv", encoding="utf-8", index=False, header=False, mode="a")
+    df.to_csv(
+        f"{outfile}.csv",
+        encoding="utf-8",
+        index=False,
+        header=False,
+        mode="a",
+    )
