@@ -85,4 +85,4 @@ if __name__ == "__main__":
 
     pargs, unknown = argparser.parse_known_args()
     input = pargs.input_file
-    get_mt_from_comca(input)
+    get_mt_from_comcat(input)
