@@ -19,7 +19,7 @@ def classify_catalog(slab1, slab2, nshm):
     Reads in files and sets up arguments to the function classify_catalog_ParallelLoop, which runs in parallel and determines probability that an event occurred in the upper plate (crustal), lower plate (intraslab), or along the subduction interface.
     """
     # get Slab2 catalog for user requested slab model
-    infile = f"{slab1}_04-24_input.csv"
+    infile = f"{slab1}_04-18_input.csv"
     working_dir = os.getcwd()
     fpath = f"{working_dir}/catalog_sep/Input/Slab2Catalogs/{infile}"
     # determine output file name
