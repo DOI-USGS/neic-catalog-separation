@@ -39,6 +39,7 @@ Moment tensor information is used during the classification process. To query th
 To separate the output CSV from classify_catalog.py into three files, one for each separated region (crustal, interface, and intraslab) use:
 
     - python catalog_sep/src/utils/separate_csv.py -h
+      - Note: You may need to update the header names to match your input data.
 
 To calculate the b-value of the earthquake catalog, prepare an ASCII file containing only magnitudes in one column and run:
 
