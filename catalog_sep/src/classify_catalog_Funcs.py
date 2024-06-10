@@ -572,19 +572,19 @@ def determine_closest_slab(slab1, slab2, working_dir, lat, lon, depth):
     # this will be classified accordingly, so we can default to the first slab region supplied
     if np.isnan(sdep1) and np.isnan(sdep2):
         smod = slab1
-    # if depth from first slab (slab1) is not nan and depth of earthquake is cloest to depth of the slab1, then use slab1
+    # if depth from first slab (slab1) is not nan and depth of earthquake is closest to depth of the slab1, then use slab1
     if sdep1 > 0:
         if np.isnan(slab2_ddiff):
             smod = slab1
         elif slab1_ddiff < slab2_ddiff:
             smod = slab1
-    # if depth from second slab (slab2) is not nan and depth of earthquake is cloest to depth of the slab2, then use slab2
+    # if depth from second slab (slab2) is not nan and depth of earthquake is closest to depth of the slab2, then use slab2
     if sdep2 > 0:
         if np.isnan(slab1_ddiff):
             smod = slab2
         elif slab2_ddiff < slab1_ddiff:
             smod = slab2
-    # if depth differences are the same, assume slab1 since this is most likely an intraslab event, it does not matter tha slab
+    # if depth differences are the same, assume slab1 since this is most likely an intraslab event, it does not matter which slab to use
     if slab1_ddiff == slab2_ddiff:
         smod = slab1
 
