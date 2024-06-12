@@ -1,7 +1,7 @@
 *.pyc
 .DS_Store
 __pycache__
-*_eqtype.csv
+*.csv
 *.png
 *.out
 *.xyz

@@ -1,5 +1,6 @@
 # stdlib imports
 import glob
+import csv
 from copy import deepcopy
 from math import asin, cos, sqrt
 
@@ -273,9 +274,7 @@ def overturned_slab(smod, working_dir, lon, lat):
         if minDist > 1:
             sdep = np.nan
     else:
-        print(
-            "Looks like the slab depth at the earthquake location is NaN and NOT in a tiled slab region...check data...Maybe in another slab region or not in the SZ."
-        )
+
         sdep = np.nan
         sstr = np.nan
         sdip = np.nan
@@ -437,8 +436,8 @@ def get_slab_moho_info(smod, working_dir, lat, lon):
     """Return a dictionary with slab2 depth, dip, strike, and depth uncertainty at location of earthquake
     Args:
         smod (str): slab2 region
-        lat (float): earthquake lon
-        lon (float): earthquake lat
+        lat (float): earthquake lat
+        lon (float): earthquake lon
     Returns:
         abs(sdep) (float): positive slab2 depth at earthquake location
         sstr (float): slab2 strike at earthquake location
@@ -510,3 +509,83 @@ def write_file(df, outfile):
         header=False,
         mode="a",
     )
+
+
+def get_seismogenic_depth(working_dir, slab):
+    """Get seismogenic zone thickness/depth
+
+    Args:
+        slab (str): 3-letter code of slab2 region
+    Return:
+        sz_deep (int): depth to the deep limit of the seismogenic zone based on slab2
+    """
+    # Initialize empty variables to obtain from seismogenic zone thickness file
+    scode = []
+    sd = []
+    arak = []
+
+    # get published Slab2 seismogenic thickness file
+    sztfile = f"{working_dir}/catalog_sep/Input/szt.txt"
+    count = 0
+    with open(sztfile) as file:
+        reader = csv.reader(file, delimiter=",", skipinitialspace=True)
+        next(reader)
+        for one, two, three, four, five, six, seven, eight, nine, ten, eleven in reader:
+            scode.append(str(three))
+            sd.append(float(six))
+            arak.append(float(ten))
+            if scode[count] == slab:
+                sz_deep = sd[count]
+                srake = arak[count]
+                break
+            # else, use a default value
+            else:
+                sz_deep = 40
+            count = count + 1
+
+    return sz_deep
+
+
+def determine_closest_slab(slab1, slab2, working_dir, lat, lon, depth):
+    """Determine which slab2 region to use
+
+    Args:
+        slab1 (str): 3-letter code of slab2 region
+        slab2 (str): 3-letter code of second slab2 region
+    Return:
+        smod (str): 3-letter code of the slab2 region to use
+    """
+    # get slab info for slab1:
+    sdep1, sstr1, sdip1, sunc1, mohoDepth1 = get_slab_moho_info(
+        slab1, working_dir, lat, lon
+    )
+    # get depth difference betwen slab1 depth and earthquake depth
+    slab1_ddiff = np.abs(depth - sdep1)
+    # get slab info for slab2:
+    sdep2, sstr2, sdip2, sunc2, mohoDepth2 = get_slab_moho_info(
+        slab2, working_dir, lat, lon
+    )
+    # get depth different between slab2 depth and earthquake depth
+    slab2_ddiff = np.abs(depth - sdep2)
+
+    # if both depths are nan, then the earthquake is outside of slab2 region, and is likely crustal or outer rise
+    # this will be classified accordingly, so we can default to the first slab region supplied
+    if np.isnan(sdep1) and np.isnan(sdep2):
+        smod = slab1
+    # if depth from first slab (slab1) is not nan and depth of earthquake is closest to depth of the slab1, then use slab1
+    if sdep1 > 0:
+        if np.isnan(slab2_ddiff):
+            smod = slab1
+        elif slab1_ddiff < slab2_ddiff:
+            smod = slab1
+    # if depth from second slab (slab2) is not nan and depth of earthquake is closest to depth of the slab2, then use slab2
+    if sdep2 > 0:
+        if np.isnan(slab1_ddiff):
+            smod = slab2
+        elif slab2_ddiff < slab1_ddiff:
+            smod = slab2
+    # if depth differences are the same, assume slab1 since this is most likely an intraslab event, it does not matter which slab to use
+    if slab1_ddiff == slab2_ddiff:
+        smod = slab1
+
+    return smod

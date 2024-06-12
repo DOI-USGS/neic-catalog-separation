@@ -10,11 +10,11 @@ import classify_catalog_Funcs as funcs
 
 
 def classify_eqs(
-    smod,
+    slab1,
+    slab2,
     nshm,
     working_dir,
     dataframe,
-    dlim,
     srake,
     outfile,
     flex,
@@ -23,10 +23,10 @@ def classify_eqs(
     """
     Determine probability that an event occurred in the upper plate (crustal), lower plate (intraslab), or along the subduction interface
     Args:
-        smod (str): slab2 model region
+        slab1 (str): slab2 model region
+        slab2 (str or boolean): second slab2 model region (if applicable). Default is False.
         working_dir (str): users current working directory
         dataframe (pandas dataframe): input catalog dataframe
-        dlim (int): deep limit of seismogenic zone
         srake (int): slab2 region rake
         outfile (str): name of output file
         flex (int): flex value
@@ -44,6 +44,20 @@ def classify_eqs(
     config = configparser.ConfigParser()
     config.sections()
     config.read(f"{working_dir}/catalog_sep/Input/config/subduction.conf")
+
+    # if a second slab2 region is provided, determine which slab this
+    # event is closest to and use that slab2 region for classification:
+    if slab2 is not False:
+        print(i)
+        smod = funcs.determine_closest_slab(
+            slab1, slab2, working_dir, lat, lon, dataframe.depth[i]
+        )
+        print(f"Using the {smod} slab2 region for {i}.....")
+    else:
+        smod = slab1
+    # determine dlim (deep seismogenic limit + flex (buffer/wiggle room))
+    sz_deep = funcs.get_seismogenic_depth(working_dir, smod)
+    dlim = sz_deep + flex
 
     # get slab2 info & moho depth at earthquake location
     sdep, sstr, sdip, sunc, mohoDepth = funcs.get_slab_moho_info(
@@ -227,6 +241,7 @@ def classify_eqs(
     dataframe.at[i, "p_slab"] = p_slab
     dataframe.at[i, "eqloc"] = eqloc
     dataframe.at[i, "quality"] = qual
+    dataframe.at[i, "slab2_region"] = smod
 
     # write dataframe to csv file:
     funcs.write_file(dataframe, outfile)
