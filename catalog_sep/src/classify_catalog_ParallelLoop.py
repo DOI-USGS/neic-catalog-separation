@@ -48,7 +48,6 @@ def classify_eqs(
     # if a second slab2 region is provided, determine which slab this
     # event is closest to and use that slab2 region for classification:
     if slab2 is not False:
-        print(i)
         smod = funcs.determine_closest_slab(
             slab1, slab2, working_dir, lat, lon, dataframe.depth[i]
         )
@@ -56,7 +55,7 @@ def classify_eqs(
     else:
         smod = slab1
     # determine dlim (deep seismogenic limit + flex (buffer/wiggle room))
-    sz_deep = funcs.get_seismogenic_depth(working_dir, smod)
+    sz_deep = funcs.get_seismogenic_depth(working_dir, smod, nshm)
     dlim = sz_deep + flex
 
     # get slab2 info & moho depth at earthquake location
@@ -75,7 +74,7 @@ def classify_eqs(
             sdep, sstr, sdip = funcs.overturned_slab(smod, working_dir, lon, lat)
     # For USGS NSHM catalogs, handle events outside of the SZ
     # here, slab depth does not exist & we are not in an overturned slab region
-    # So, the event is not slab & not interface, this is crustal (maybe mantle)
+    # These events occur outside the 0 km slab contour, and can be assumed as outer-rise (eqloc="or")
     if nshm and np.isnan(sdep):
         p_int = 0
         p_crustal = 1
@@ -86,7 +85,18 @@ def classify_eqs(
         sdip = 999
         sunc = 999
         s1 = dataframe.S1[i]
+        # band-aid for USGS PRVI NSHM - mark events outside/seward of the 0 km slab grids as outer-rise, but events in the
+        # specified bounding box below are outside the slab grids but crustal (i.e., not outer-rise), so mark those accordingly
+        if smod == "mue" or smod == "car":
+            if lon >= 285 and lon <= 289 and lat >= 18 and lat <= 20:
+                eqloc = "u"
+            else:
+                eqloc = "or"
+        else:
+            eqloc = "u"
     else:
+        # set eqloc to empty since it is not determined yet, but needed for an if statement below
+        eqloc = ""
         # get difference between slab & EQ
         ddiff = np.abs(dataframe.depth[i] - sdep)
         ddiff2 = dataframe.depth[i] - sdep
@@ -188,34 +198,35 @@ def classify_eqs(
     )
 
     # Based on probability determine if event is upper plate/crustal (u), lower plate/slab (l), or interface (i)
-    if p_crustal > p_int and p_crustal > p_slab:
-        eqloc = "u"
-    elif p_int > p_crustal and p_int > p_slab:
-        eqloc = "i"
-    elif p_slab > p_int and p_slab > p_crustal:
-        eqloc = "l"
-    elif p_slab == p_int == p_crustal == 0:
-        eqloc = "unknown"
-    # If there is an equal probability, determine most likely classification. Locations will also include 'eq' for 'equal' at the end to inform the user that the event may need further inspection
-    elif (
-        p_slab == p_int == p_crustal
-        or p_slab == p_int
-        or p_int == p_crustal
-        or p_crustal == p_slab
-    ):
-        eqloc = funcs.equal_prob(
-            p_crustal,
-            p_int,
-            p_slab,
-            mohoDepth,
-            s1,
-            sstr,
-            sdep,
-            kagan,
-            ddiff,
-            dlim,
-            dataframe.depth[i],
-        )
+    if eqloc != "or":
+        if p_crustal > p_int and p_crustal > p_slab:
+            eqloc = "u"
+        elif p_int > p_crustal and p_int > p_slab:
+            eqloc = "i"
+        elif p_slab > p_int and p_slab > p_crustal:
+            eqloc = "l"
+        elif p_slab == p_int == p_crustal == 0:
+            eqloc = "unknown"
+        # If there is an equal probability, determine most likely classification. Locations will also include 'eq' for 'equal' at the end to inform the user that the event may need further inspection
+        elif (
+            p_slab == p_int == p_crustal
+            or p_slab == p_int
+            or p_int == p_crustal
+            or p_crustal == p_slab
+        ):
+            eqloc = funcs.equal_prob(
+                p_crustal,
+                p_int,
+                p_slab,
+                mohoDepth,
+                s1,
+                sstr,
+                sdep,
+                kagan,
+                ddiff,
+                dlim,
+                dataframe.depth[i],
+            )
 
     # Flag events that may be mantle events (not determining probability, just flagging possible mantle events) - not used for USGS NSHM catalogs
     # This is tagged by adding a 'm' for mantle to eqloc, so that the highest probability is also still known

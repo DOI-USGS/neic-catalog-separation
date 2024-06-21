@@ -1,6 +1,7 @@
 import argparse
 import pandas as pd
 
+# Header below refers to column names and may need to be updated
 HEADER = [
     "lat",
     "lon",
@@ -53,10 +54,11 @@ def separate_input(input: str, mt: bool):
         names=HEADER,
     )
     # filter based on location
-    # u = crustal/upper plate, l = intraslab/lower plate, and i = interface
+    # u = crustal/upper plate, l = intraslab/lower plate, i = interface, or = outer-rise
     crustalDF = dataFrame[dataFrame["loc"] == "u"]
     interfaceDF = dataFrame[dataFrame["loc"] == "i"]
     intraslabDF = dataFrame[dataFrame["loc"] == "l"]
+    outerriseDF = dataFrame[dataFrame["loc"] == "or"]
 
     # save as CSV files with header
     crustalDF.to_csv(
@@ -80,12 +82,20 @@ def separate_input(input: str, mt: bool):
         header=HEADER,
         mode="a",
     )
+    outerriseDF.to_csv(
+        "outer-rise.csv",
+        encoding="utf-8",
+        index=False,
+        header=HEADER,
+        mode="a",
+    )
 
     # if user also wants separated files consisting of events that have moment tensor data:
     if mt:
         crustalDF_mt = crustalDF[~crustalDF["S1"].isnull()]
         interfaceDF_mt = interfaceDF[~interfaceDF["S1"].isnull()]
         intraslabDF_mt = intraslabDF[~intraslabDF["S1"].isnull()]
+        outerriseDF_mt = outerriseDF[~outerriseDF["S1"].isnull()]
 
         # save as CSV files with header
         crustalDF_mt.to_csv(
@@ -104,6 +114,13 @@ def separate_input(input: str, mt: bool):
         )
         intraslabDF_mt.to_csv(
             "intraslab_mt.csv",
+            encoding="utf-8",
+            index=False,
+            header=HEADER,
+            mode="a",
+        )
+        outerriseDF_mt.to_csv(
+            "outer-rise_mt.csv",
             encoding="utf-8",
             index=False,
             header=HEADER,

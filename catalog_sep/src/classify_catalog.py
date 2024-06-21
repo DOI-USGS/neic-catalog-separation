@@ -34,7 +34,6 @@ def classify_catalog(slab1, slab2, nshm):
 
     # run classify_catalog_ParallelLoops in parallel using max processors:
     noprocs = mp.cpu_count()
-    # noprocs = 1
 
     pool = mp.Pool(processes=noprocs)
     loop = partial(
