@@ -127,19 +127,12 @@ def classify_eqs(
         # if EQ is between the flex zone depth and less than max sz depth (dlim)
         if x2 <= dataframe.depth[i] <= x1 and dataframe.depth[i] <= dlim:
             p_int_flex = 1.0
-        # else if greater than bottom of flex, but less than dlim then ramp from x1 = x1 and x2 = dlim, with p1 = 1.0 and p2 = 0
-        elif dataframe.depth[i] > x1 and dataframe.depth[i] <= dlim:
-            x = dataframe.depth[i]
-            x2 = dlim
-            p1 = float(config["p_int_fx1"]["p1"])
-            p2 = float(config["p_int_fx1"]["p2"])
-            p_int_flex = funcs.get_probability(x, x1, p1, x2, p2)
         # else if less than top of flex, but deeper than moho; this could be mantle wedge region then ramp from x1 = moho and x2 = x2, with p1 = 1 and p2 = 0
         elif dataframe.depth[i] < x2 and dataframe.depth[i] >= mohoDepth:
             x1 = mohoDepth
             x = dataframe.depth[i]
-            p1 = float(config["p_int_fx2"]["p1"])
-            p2 = float(config["p_int_fx2"]["p2"])
+            p1 = float(config["p_int_fx"]["p1"])
+            p2 = float(config["p_int_fx"]["p2"])
             p_int_flex = funcs.get_probability(x, x1, p1, x2, p2)
         # else if within flex, but less than moho, then interface
         elif x2 <= dataframe.depth[i] <= x1 and dataframe.depth[i] <= mohoDepth:
