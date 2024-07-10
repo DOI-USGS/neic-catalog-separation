@@ -239,6 +239,7 @@ def overturned_slab(smod, working_dir, lon, lat):
     Find nearest lon,lat to EQ lon,lat and extract the corresponding overturned/tilted slab depth, strike, and dip
     Args:
         smod (str): slab model
+        working_dir (str): current working directory (used for looking for data/files)
         lon (float): lon of EQ
         lat (float): lat of EQ
     Returns:
@@ -387,7 +388,7 @@ def flag_mantle(s1, sstr, depth, dlim, sdep, sunc, Ppl, Tpl, eqloc):
 
 def determine_quality(eqloc, p_crustal, p_slab, p_int, s1, sstr):
     """
-    Determine quality (qual) of earthquake classifiction
+    Determine quality (qual) of earthquake classification
     if kagan angle/MT is available: probability >=80% qual = A; 60-80% qual = B; 40-60% qual = C; <40% qual = D; if eq qual = D
     if kagan angle/MT not available: probability >=80% qual = B; 60-80% qual = C; <60% = D
     Args:
@@ -410,6 +411,9 @@ def determine_quality(eqloc, p_crustal, p_slab, p_int, s1, sstr):
         qual = "D"
         return qual
     if "m" in eqloc:
+        qual = "D"
+        return qual
+    if "or" in eqloc:
         qual = "D"
         return qual
     if s1 > 0 and sstr > 0:
@@ -436,6 +440,7 @@ def get_slab_moho_info(smod, working_dir, lat, lon):
     """Return a dictionary with slab2 depth, dip, strike, and depth uncertainty at location of earthquake
     Args:
         smod (str): slab2 region
+        working_dir (str): current working directory (used for looking for data/files)
         lat (float): earthquake lat
         lon (float): earthquake lon
     Returns:
@@ -511,37 +516,57 @@ def write_file(df, outfile):
     )
 
 
-def get_seismogenic_depth(working_dir, slab):
+def get_seismogenic_depth(working_dir, slab, nshm):
     """Get seismogenic zone thickness/depth
 
     Args:
+        working_dir (str): current working directory (used for looking for data/files)
         slab (str): 3-letter code of slab2 region
+        nshm (boolean): If running separation for USGS NSHM the this is True, else False (default)
     Return:
         sz_deep (int): depth to the deep limit of the seismogenic zone based on slab2
     """
-    # Initialize empty variables to obtain from seismogenic zone thickness file
-    scode = []
-    sd = []
-    arak = []
+    if nshm:
+        if slab == "car":
+            sz_deep = 50
+        elif slab == "mue":
+            sz_deep = 40
+    else:
+        # Initialize empty variables to obtain from seismogenic zone thickness file
+        scode = []
+        sd = []
+        arak = []
 
-    # get published Slab2 seismogenic thickness file
-    sztfile = f"{working_dir}/catalog_sep/Input/szt.txt"
-    count = 0
-    with open(sztfile) as file:
-        reader = csv.reader(file, delimiter=",", skipinitialspace=True)
-        next(reader)
-        for one, two, three, four, five, six, seven, eight, nine, ten, eleven in reader:
-            scode.append(str(three))
-            sd.append(float(six))
-            arak.append(float(ten))
-            if scode[count] == slab:
-                sz_deep = sd[count]
-                srake = arak[count]
-                break
-            # else, use a default value
-            else:
-                sz_deep = 40
-            count = count + 1
+        # get published Slab2 seismogenic thickness file
+        sztfile = f"{working_dir}/catalog_sep/Input/szt.txt"
+        count = 0
+        with open(sztfile) as file:
+            reader = csv.reader(file, delimiter=",", skipinitialspace=True)
+            next(reader)
+            for (
+                one,
+                two,
+                three,
+                four,
+                five,
+                six,
+                seven,
+                eight,
+                nine,
+                ten,
+                eleven,
+            ) in reader:
+                scode.append(str(three))
+                sd.append(float(six))
+                arak.append(float(ten))
+                if scode[count] == slab:
+                    sz_deep = sd[count]
+                    srake = arak[count]
+                    break
+                # else, use a default value
+                else:
+                    sz_deep = 40
+                count = count + 1
 
     return sz_deep
 
@@ -552,6 +577,10 @@ def determine_closest_slab(slab1, slab2, working_dir, lat, lon, depth):
     Args:
         slab1 (str): 3-letter code of slab2 region
         slab2 (str): 3-letter code of second slab2 region
+        working_dir (str): current working directory (used for looking for data/files)
+        lat (float): latitude of earthquake hypocenter
+        lon(float): longitude of earthquake hypocenter
+        depth (float): depth (km) of earthquake hypocenter
     Return:
         smod (str): 3-letter code of the slab2 region to use
     """
