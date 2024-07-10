@@ -85,7 +85,7 @@ def classify_eqs(
         sdip = 999
         sunc = 999
         s1 = dataframe.S1[i]
-        # band-aid for USGS PRVI NSHM - mark events outside/seward of the 0 km slab grids as outer-rise, but events in the
+        # band-aid for USGS PRVI NSHM - mark events outside/seaward of the 0 km slab grids as outer-rise, but events in the
         # specified bounding box below are outside the slab grids but crustal (i.e., not outer-rise), so mark those accordingly
         if smod == "mue" or smod == "car":
             if lon >= 285 and lon <= 289 and lat >= 18 and lat <= 20:
