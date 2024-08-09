@@ -5,10 +5,9 @@ import multiprocessing as mp
 import os
 from functools import partial
 
-import pandas as pd
-
 # local imports
 import classify_catalog_ParallelLoop as classify
+import pandas as pd
 
 # constants
 FLEX = 15  # buffer
@@ -33,7 +32,8 @@ def classify_catalog(slab1, slab2, nshm):
     srake = 90
 
     # run classify_catalog_ParallelLoops in parallel using max processors:
-    noprocs = mp.cpu_count()
+    # noprocs = mp.cpu_count()
+    noprocs = 1
 
     pool = mp.Pool(processes=noprocs)
     loop = partial(
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     )
     argparser.add_argument(
         "--nshm",
-        default="False",
+        default=False,
         choices=["True", "False"],
         help="Specify True if running for a NSHM catalog. This will classify earthquakes outside of the specified Slab2 region. Default is False.",
     )

@@ -1,8 +1,9 @@
 import argparse
 import json
-from urllib.request import urlopen
-import pandas as pd
 import time
+from urllib.request import urlopen
+
+import pandas as pd
 
 
 def get_mt_from_comcat(input):
