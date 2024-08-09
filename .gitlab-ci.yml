@@ -1,0 +1,22 @@
+image: ${CI_REGISTRY}/devops/images/usgs/python:3.9
+
+stages:
+  - build
+  - lint
+
+poetry:
+  stage: build
+  artifacts:
+    paths:
+      - poetry.toml
+      - .venv
+    expire_in: 1 week
+  script:
+    - poetry config virtualenvs.in-project true --local
+    - poetry install
+
+lint:
+  stage: lint
+  script:
+    - poetry run poe lint
+
