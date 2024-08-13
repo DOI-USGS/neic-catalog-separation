@@ -7,7 +7,7 @@ profile = "black"
 
 
 [tool.poetry]
-name = "neic-catalog-segregation"
+name = "neic-catalog-separation"
 authors = ["Kirstie Haynie <khaynie@usgs.gov>"]
 description = "Separate/classify a subduction zone earthquake catalog into sub-catalogs: crustal, interface, intraslab."
 homepage = "https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation"
