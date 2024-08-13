@@ -1,0 +1,48 @@
+[build-system]
+requires = ["poetry-core>=1.1.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+profile = "black"
+
+
+[tool.poetry]
+name = "neic-catalog-separation"
+authors = ["Kirstie Haynie <khaynie@usgs.gov>"]
+description = "Separate/classify a subduction zone earthquake catalog into sub-catalogs: crustal, interface, intraslab."
+homepage = "https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation"
+include = [
+  "LICENSE.md"
+]
+keywords = ["usgs", "neic", "nshm", "catalog", "earthquake"]
+license = "CC0-1.0"
+packages = [
+  { include = "src", from = "catalog_sep" }
+]
+repository = "https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation"
+version = "1.0.0"
+
+[tool.poetry.dependencies]
+python = ">=3.9,<=3.10"
+numpy = "1.23.2"
+pandas = "^1.4.3"
+mapio = "^0.8"
+
+[tool.poetry.dev-dependencies]
+black = "^22.3.0"
+isort = "^5.10.1"
+pytest = "^6.2.4"
+pytest-cov = "^2.12.1"
+poethepoet = "^0.10.0"
+
+[tool.poe.tasks]
+# e.g. "poetry run poe lint"
+lint = [
+  { shell = "black --check catalog_sep/src" },
+  { shell = "isort --check catalog_sep/src" }
+]
+test = [
+  { shell = "pytest src/tests/ --cov=catalog_sep/src --junitxml junit.xml src/tests" },
+  { shell = "coverage xml" },
+  { shell = "coverage html" }
+]

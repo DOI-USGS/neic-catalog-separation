@@ -1,6 +1,6 @@
 # stdlib imports
-import glob
 import csv
+import glob
 from copy import deepcopy
 from math import asin, cos, sqrt
 

@@ -1,12 +1,12 @@
 # stdlib imports
 import configparser
 
+# local imports
+import classify_catalog_Funcs as funcs
+
 # third party imports
 import numpy as np
 import pandas as pd
-
-# local imports
-import classify_catalog_Funcs as funcs
 
 
 def classify_eqs(
@@ -120,11 +120,11 @@ def classify_eqs(
             kagan = np.nan
 
         # Determine interface probability:
-        # Calculate the probability of interface given the
+        # Calculate the probability that the EQ occurred along the interface given the
         # EQ location and depth to slab +/- a flex (buffer) value around the slab
         x1 = sdep + flex
         x2 = sdep - flex
-        # if EQ is between the flex zone depth and less than max sz depth (dlim)
+        # if EQ is between the flex zone depth and less than maximum seismogenic zone (sz) depth (dlim)
         if x2 <= dataframe.depth[i] <= x1 and dataframe.depth[i] <= dlim:
             p_int_flex = 1.0
         # else if less than top of flex, but deeper than moho; this could be mantle wedge region then ramp from x1 = moho and x2 = x2, with p1 = 1 and p2 = 0
@@ -140,7 +140,7 @@ def classify_eqs(
         else:
             p_int_flex = 0.0
 
-        # Calculate probability that event occurred above bottom of seismogenic zone
+        # Calculate probability that event occurred between the seismogenic zone and maximum seismogenic zone (dlim)
         x1 = dlim - flex
         x2 = dlim
         p1 = float(config["p_int_sz"]["p1"])
