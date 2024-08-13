@@ -13,18 +13,19 @@ import pandas as pd
 FLEX = 15  # buffer
 
 
-def classify_catalog(slab1, slab2, nshm):
+def classify_catalog(
+    slab1: str, input_file: str, slab2: str | bool, nshm: bool
+) -> None:
     """
     Reads in files and sets up arguments to the function classify_catalog_ParallelLoop, which runs in parallel and determines probability that an event occurred in the upper plate (crustal), lower plate (intraslab), or along the subduction interface.
     """
     # get Slab2 catalog for user requested slab model
-    infile = f"{slab1}_04-18_input.csv"
+    infile = input_file
     working_dir = os.getcwd()
-    fpath = f"{working_dir}/catalog_sep/Input/Slab2Catalogs/{infile}"
-    # determine output file name
-    outfile = f"{working_dir}/{slab1}_eqtype"
+    # specify output file name
+    outfile = f"{working_dir}/{slab1}_separated"
 
-    dataframe = pd.read_csv(fpath, low_memory=False)
+    dataframe = pd.read_csv(infile, low_memory=False)
     # create list to get length of dataframe (needed for parallel loop)
     id_no = dataframe["id_no"].tolist()
 
@@ -105,6 +106,10 @@ if __name__ == "__main__":
         help="Name of the Slab2 region pertaining to the earthquake catalog is required",
     )
     argparser.add_argument(
+        "input_file",
+        help="Path and file name for the input catalog to separate (must be CSV file format)",
+    )
+    argparser.add_argument(
         "--second_slab",
         default=False,
         help="Name of the second Slab2 region pertaining to the earthquake catalog. This is optional and only required for catalogs that span overlapping slabs.",
@@ -118,6 +123,7 @@ if __name__ == "__main__":
 
     pargs, unknown = argparser.parse_known_args()
     slab1 = pargs.slab2_region
+    input_file = pargs.input_file
     slab2 = pargs.second_slab
     nshm = pargs.nshm
-    classify_catalog(slab1, slab2, nshm)
+    classify_catalog(slab1, input_file, slab2, nshm)

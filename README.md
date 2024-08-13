@@ -11,11 +11,11 @@ This code was designed to specifically work with USGS Slab2 subduction zones and
 
 To classify a Slab2 subduction region's earthquake catalog into upper plate/crustal, interface, or lower plate/intraslab, open your terminal and run the following command (run within the home directory (neic-catalog-segregation)):
 
-    - python catalog_sep/src/classify_catalog.py $Slab2Region
+    - python catalog_sep/src/classify_catalog.py $Slab2Region $PathToInputCatalog
 
 If you earthquake catalog files spans two subduction zones/slabs run
 
-    - python catalog_sep/src/classify_catalog.py $Slab2Region --second_slab $Slab2Region
+    - python catalog_sep/src/classify_catalog.py $Slab2Region $PathToInputCatalog --second_slab $Slab2Region
 
 The $Slab2Region should be the three-letter abbreviation associated with the Slab2 subduction zone of interest. To see a full list of the Slab2 subduction zones and abbreviations run:
 

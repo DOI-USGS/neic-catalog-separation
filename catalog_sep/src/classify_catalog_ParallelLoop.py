@@ -72,6 +72,18 @@ def classify_eqs(
     if np.isnan(sdep):
         if smod == "man" or smod == "ker" or smod == "izu" or smod == "sol":
             sdep, sstr, sdip = funcs.overturned_slab(smod, working_dir, lon, lat)
+    # if depth is still nan, then assume this is crustal
+    if np.isnan(sdep):
+        p_int = 0
+        p_crustal = 1
+        p_slab = 0
+        # data below is written to output file, so setting to a nonsensical number here that may be overwritten
+        mohoDepth = 999
+        sdep = 999
+        sstr = 999
+        sdip = 999
+        sunc = 999
+        s1 = dataframe.S1[i]
     # For USGS NSHM catalogs, handle events outside of the SZ
     # here, slab depth does not exist & we are not in an overturned slab region
     # These events occur outside the 0 km slab contour, and can be assumed as outer-rise (eqloc="or")
@@ -79,6 +91,7 @@ def classify_eqs(
         p_int = 0
         p_crustal = 1
         p_slab = 0
+        # data below is written to output file, so setting to a nonsensical number here that may be overwritten
         mohoDepth = 999
         sdep = 999
         sstr = 999
@@ -166,6 +179,7 @@ def classify_eqs(
         x2 = float(config["p_crust_diff"]["x2"])
         p1 = float(config["p_crust_diff"]["p1"])
         p2 = float(config["p_crust_diff"]["p2"])
+        print("X VALUES FOR RAMP", x1, x2, ddiff2)
         p_crust_diff = funcs.get_probability(ddiff2, x1, p1, x2, p2)
 
         # Calculate probability that earthquake is crustal

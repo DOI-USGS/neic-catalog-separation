@@ -82,6 +82,7 @@ def get_probability(x, x1, p1, x2, p2):
     Returns:
         float: Probability at input x value.
     """
+    print(x, x1, p1, x2, p2)
     if x <= x1:
         prob = p1
     elif x >= x2:
@@ -90,6 +91,7 @@ def get_probability(x, x1, p1, x2, p2):
         slope = (p1 - p2) / (x1 - x2)
         intercept = p1 - slope * x1
         prob = x * slope + intercept
+    print("PROB NUMBER 1 IS", prob)
     return prob
 
 
@@ -401,6 +403,7 @@ def determine_quality(eqloc, p_crustal, p_slab, p_int, s1, sstr):
     Returns:
         qual (str): quality/grade of earthquake classification (A, B, C, D)
     """
+    print("DETERMINE QUALITY:", p_crustal, p_slab, p_int)
     if eqloc == "u":
         prob = p_crustal
     elif eqloc == "l":
@@ -417,6 +420,7 @@ def determine_quality(eqloc, p_crustal, p_slab, p_int, s1, sstr):
         qual = "D"
         return qual
     if s1 > 0 and sstr > 0:
+        print("PROB IS", prob)
         if prob >= 80:
             qual = "A"
         elif prob >= 60 and prob < 80:
@@ -426,6 +430,7 @@ def determine_quality(eqloc, p_crustal, p_slab, p_int, s1, sstr):
         else:
             qual = "D"
     else:
+        print("PROB IS", prob)
         if prob >= 80:
             qual = "B"
         elif prob >= 60 and prob < 80:

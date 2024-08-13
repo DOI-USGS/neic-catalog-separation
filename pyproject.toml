@@ -42,7 +42,5 @@ lint = [
   { shell = "isort --check catalog_sep/src" }
 ]
 test = [
-  { shell = "pytest src/tests/ --cov=catalog_sep/src --junitxml junit.xml src/tests" },
-  { shell = "coverage xml" },
-  { shell = "coverage html" }
+  { shell = "pytest catalog_sep/src/test" }
 ]
