@@ -2,7 +2,7 @@
 dist
 .DS_Store
 __pycache__
-*.csv
+*_separated.csv
 *.png
 *.out
 *.xyz

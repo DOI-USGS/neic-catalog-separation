@@ -6,7 +6,6 @@ import classify_catalog_Funcs as funcs
 
 # third party imports
 import numpy as np
-import pandas as pd
 
 
 def classify_eqs(
@@ -15,7 +14,6 @@ def classify_eqs(
     nshm,
     working_dir,
     dataframe,
-    srake,
     outfile,
     flex,
     i,
@@ -27,7 +25,6 @@ def classify_eqs(
         slab2 (str or boolean): second slab2 model region (if applicable). Default is False.
         working_dir (str): users current working directory
         dataframe (pandas dataframe): input catalog dataframe
-        srake (int): slab2 region rake
         outfile (str): name of output file
         flex (int): flex value
         i (int): iteration
@@ -55,7 +52,7 @@ def classify_eqs(
     else:
         smod = slab1
     # determine dlim (deep seismogenic limit + flex (buffer/wiggle room))
-    sz_deep = funcs.get_seismogenic_depth(working_dir, smod, nshm)
+    sz_deep, srake = funcs.get_seismogenic_depth(working_dir, smod, nshm)
     dlim = sz_deep + flex
 
     # get slab2 info & moho depth at earthquake location
@@ -179,7 +176,6 @@ def classify_eqs(
         x2 = float(config["p_crust_diff"]["x2"])
         p1 = float(config["p_crust_diff"]["p1"])
         p2 = float(config["p_crust_diff"]["p2"])
-        print("X VALUES FOR RAMP", x1, x2, ddiff2)
         p_crust_diff = funcs.get_probability(ddiff2, x1, p1, x2, p2)
 
         # Calculate probability that earthquake is crustal
