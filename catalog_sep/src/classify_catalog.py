@@ -13,9 +13,7 @@ import pandas as pd
 FLEX = 15  # buffer
 
 
-def classify_catalog(
-    slab1: str, input_file: str, slab2, nshm: bool, test: bool
-) -> None:
+def classify_catalog(slab1: str, input_file: str, slab2, nshm: bool) -> None:
     """
     Reads in files and sets up arguments to the function classify_catalog_ParallelLoop, which runs in parallel and determines probability that an event occurred in the upper plate (crustal), lower plate (intraslab), or along the subduction interface.
     """
@@ -118,17 +116,11 @@ if __name__ == "__main__":
         choices=["True", "False"],
         help="Specify True if running for a NSHM catalog. This will classify earthquakes outside of the specified Slab2 region. Default is False.",
     )
-    argparser.add_argument(
-        "--test",
-        default=False,
-        choices=["True", "False"],
-        help="Specify True if running test. This will allow the code to run in serial. Default is False.",
-    )
 
     pargs, unknown = argparser.parse_known_args()
     slab1 = pargs.slab2_region
     input_file = pargs.input_file
     slab2 = pargs.second_slab
     nshm = pargs.nshm
-    test = pargs.test
-    classify_catalog(slab1, input_file, slab2, nshm, test)
+
+    classify_catalog(slab1, input_file, slab2, nshm)
