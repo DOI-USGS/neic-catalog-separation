@@ -13,7 +13,7 @@ import pandas as pd
 FLEX = 15  # buffer
 
 
-def classify_catalog(slab1: str, input_file: str, slab2, nshm: bool) -> None:
+def classify_catalog(slab1: str, input_file: str, slab2: str, nshm: bool) -> None:
     """
     Reads in files and sets up arguments to the function classify_catalog_ParallelLoop, which runs in parallel and determines probability that an event occurred in the upper plate (crustal), lower plate (intraslab), or along the subduction interface.
     """
