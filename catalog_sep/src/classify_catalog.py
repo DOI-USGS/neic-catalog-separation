@@ -27,11 +27,11 @@ def classify_catalog(slab1: str, input_file: str, slab2: str, nshm: bool) -> Non
     # create list to get length of dataframe (needed for parallel loop)
     id_no = dataframe["id_no"].tolist()
 
-    # run classify_catalog_ParallelLoops in parallel using max processors, unless this is a test run then use 1 processor:
-    if test:
-        noprocs = 1
-    else:
-        noprocs = mp.cpu_count()
+    # Defaults for slabs without SZT constraint
+    srake = 90
+
+    # run classify_catalog_ParallelLoops in parallel using max processors:
+    noprocs = mp.cpu_count()
 
     pool = mp.Pool(processes=noprocs)
     loop = partial(
