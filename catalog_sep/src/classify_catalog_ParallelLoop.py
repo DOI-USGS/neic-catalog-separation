@@ -6,7 +6,6 @@ import classify_catalog_Funcs as funcs
 
 # third party imports
 import numpy as np
-import pandas as pd
 
 
 def classify_eqs(
@@ -15,7 +14,6 @@ def classify_eqs(
     nshm,
     working_dir,
     dataframe,
-    srake,
     outfile,
     flex,
     i,
@@ -27,7 +25,6 @@ def classify_eqs(
         slab2 (str or boolean): second slab2 model region (if applicable). Default is False.
         working_dir (str): users current working directory
         dataframe (pandas dataframe): input catalog dataframe
-        srake (int): slab2 region rake
         outfile (str): name of output file
         flex (int): flex value
         i (int): iteration
@@ -55,7 +52,7 @@ def classify_eqs(
     else:
         smod = slab1
     # determine dlim (deep seismogenic limit + flex (buffer/wiggle room))
-    sz_deep = funcs.get_seismogenic_depth(working_dir, smod, nshm)
+    sz_deep, srake = funcs.get_seismogenic_depth(working_dir, smod, nshm)
     dlim = sz_deep + flex
 
     # get slab2 info & moho depth at earthquake location
@@ -72,6 +69,18 @@ def classify_eqs(
     if np.isnan(sdep):
         if smod == "man" or smod == "ker" or smod == "izu" or smod == "sol":
             sdep, sstr, sdip = funcs.overturned_slab(smod, working_dir, lon, lat)
+    # if depth is still nan, then assume this is crustal
+    if np.isnan(sdep):
+        p_int = 0
+        p_crustal = 1
+        p_slab = 0
+        # data below is written to output file, so setting to a nonsensical number here that may be overwritten
+        mohoDepth = 999
+        sdep = 999
+        sstr = 999
+        sdip = 999
+        sunc = 999
+        s1 = dataframe.S1[i]
     # For USGS NSHM catalogs, handle events outside of the SZ
     # here, slab depth does not exist & we are not in an overturned slab region
     # These events occur outside the 0 km slab contour, and can be assumed as outer-rise (eqloc="or")
@@ -79,6 +88,7 @@ def classify_eqs(
         p_int = 0
         p_crustal = 1
         p_slab = 0
+        # data below is written to output file, so setting to a nonsensical number here that may be overwritten
         mohoDepth = 999
         sdep = 999
         sstr = 999

@@ -5,6 +5,7 @@ from copy import deepcopy
 from math import asin, cos, sqrt
 
 import numpy as np
+import pandas as pd
 
 # third party imports
 from mapio.reader import read
@@ -38,7 +39,7 @@ def find_closest_loc(lon, lat, supLon, supLat, supDepth, supStr, supDip):
             - cos((supLat[i] - lat) * p) / 2
             + cos(lat * p) * cos(supLat[i] * p) * (1 - cos((supLon[i] - lon) * p)) / 2
         )
-        dist = 12742 * asin(sqrt(dist))
+        dist = 12742 * asin(sqrt(dist))  # 12742 km = Earth's diameter
         dist2[i] = np.hstack(
             (supLon[i], supLat[i], dist, supDepth[i], supStr[i], supDip[i])
         )
@@ -50,13 +51,22 @@ def find_closest_loc(lon, lat, supLon, supLat, supDepth, supStr, supDip):
     nearStr = dist2[minDist[0], 4]
     nearDip = dist2[minDist[0], 5]
 
-    # Convert from numpy array to python class float
-    nearDepth = nearDepth.item()
-    nearStr = nearStr.item()
-    nearDip = nearDip.item()
-    minDistv = np.min(dist2, axis=0)[2].item()
+    # For slabs that are "curled", just assume the first entry
+    nearLon = nearLon[0]
+    nearLat = nearLat[0]
+    nearDepth = nearDepth[0]
+    nearStr = nearStr[0]
+    nearDip = nearDip[0]
+    # Get the nearest distance from dist2 at this nearLon/Lat location
+    dist = (
+        0.5
+        - cos((nearLat - lat) * p) / 2
+        + cos(lat * p) * cos(nearLat * p) * (1 - cos((nearLon - lon) * p)) / 2
+    )
+    dist = 12742 * asin(sqrt(dist))
+    minDistv = np.min(dist2, axis=0)[2]
 
-    return nearLon, nearLat, nearDepth, nearStr, nearDip, minDistv
+    return nearDepth, nearStr, nearDip, minDistv
 
 
 # Calculate probability using ramp function
@@ -115,6 +125,7 @@ def get_kagan_angle(strike1, dip1, rake1, strike2, dip2, rake2):
     tensor2 = plane_to_tensor(strike2, dip2, rake2)
 
     kagan = calc_theta(tensor1, tensor2)
+
     return kagan
 
 
@@ -251,29 +262,23 @@ def overturned_slab(smod, working_dir, lon, lat):
         "Slab depth in this area is NaN...If in an overturned region using that data..."
     )
     if smod == "man" or smod == "ker" or smod == "izu" or smod == "sol":
-        slabdir = f"{working_dir}/catalog_sep/Input/Slab2Catalogs/"
-        fpath = glob.glob(slabdir + smod + "_slab2_sup*.csv")
-        fpath = fpath[0]
-        supLon = []
-        supLat = []
-        supDepth = []
-        supStr = []
-        supDip = []
-        with open(fpath) as file:
-            reader = csv.reader(file, delimiter=",", skipinitialspace=True)
-            next(reader)
-            for one, two, three, four, five, six, seven, eight, nine in reader:
-                supLon.append(float(one))
-                supLat.append(float(two))
-                supDepth.append(float(three))
-                supStr.append(float(four))
-                supDip.append(float(five))
-        sdep, sstr, sdip, minDist = funcs.find_closest_loc(
+        supFile = f"{working_dir}/catalog_sep/Slab2/{smod}_slab2_sup.csv"
+        dataFrame = pd.read_csv(supFile)
+        supLon = dataFrame["lon"]
+        supLat = dataFrame["lat"]
+        supDepth = dataFrame["depth"]
+        supStr = dataFrame["strike"]
+        supDip = dataFrame["dip"]
+        sdep, sstr, sdip, minDist = find_closest_loc(
             lon, lat, supLon, supLat, supDepth, supStr, supDip
         )
-        # dont want to classify events that are far from the tilted slab (such as outer rise or events that may not have been filtered out), so correct for that here
-        if minDist > 1:
+        # dont want to classify events that are far from the tilted slab (such as outer rise or
+        # events that may not have been filtered out), so correct for that here (in km; 1 degree lon/lat is
+        # ~111 km. Slabs can span 10s of degrees lon/lat, so lets assume anything greater than 250 km/2.5 degrees here)
+        if minDist > 250:
             sdep = np.nan
+            sstr = np.nan
+            sdip = np.nan
     else:
 
         sdep = np.nan
@@ -529,8 +534,10 @@ def get_seismogenic_depth(working_dir, slab, nshm):
     if nshm:
         if slab == "car":
             sz_deep = 50
+            srake = 90
         elif slab == "mue":
             sz_deep = 40
+            srake = 90
     else:
         # Initialize empty variables to obtain from seismogenic zone thickness file
         scode = []
@@ -539,36 +546,21 @@ def get_seismogenic_depth(working_dir, slab, nshm):
 
         # get published Slab2 seismogenic thickness file
         sztfile = f"{working_dir}/catalog_sep/Input/szt.txt"
-        count = 0
-        with open(sztfile) as file:
-            reader = csv.reader(file, delimiter=",", skipinitialspace=True)
-            next(reader)
-            for (
-                one,
-                two,
-                three,
-                four,
-                five,
-                six,
-                seven,
-                eight,
-                nine,
-                ten,
-                eleven,
-            ) in reader:
-                scode.append(str(three))
-                sd.append(float(six))
-                arak.append(float(ten))
-                if scode[count] == slab:
-                    sz_deep = sd[count]
-                    srake = arak[count]
-                    break
-                # else, use a default value
-                else:
-                    sz_deep = 40
-                count = count + 1
+        dataFrame = pd.read_csv(sztfile)
+        slab_code = dataFrame["Slab2 Code"]
+        sd = dataFrame["Sd (km)"]
+        rake = dataFrame["λ (º)"]
 
-    return sz_deep
+        # set default values - these will be overwritten if slab is present when looping through szt file
+        sz_deep = 40
+        srake = 90
+
+        for i in range(len(slab_code)):
+            if slab == slab_code[i]:
+                sz_deep = sd[i]
+                srake = rake[i]
+
+    return sz_deep, srake
 
 
 def determine_closest_slab(slab1, slab2, working_dir, lat, lon, depth):

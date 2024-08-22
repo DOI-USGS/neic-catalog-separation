@@ -3,6 +3,7 @@ image: ${CI_REGISTRY}/devops/images/usgs/python:3.9
 stages:
   - build
   - lint
+  - test
 
 poetry:
   stage: build
@@ -20,3 +21,7 @@ lint:
   script:
     - poetry run poe lint
 
+test:
+  stage: test
+  script:
+    - poetry run poe test
