@@ -70,7 +70,7 @@ def classify_eqs(
         if smod == "man" or smod == "ker" or smod == "izu" or smod == "sol":
             sdep, sstr, sdip = funcs.overturned_slab(smod, working_dir, lon, lat)
     # if depth is still nan, then assume this is crustal
-    if np.isnan(sdep):
+    if not nshm and np.isnan(sdep):
         p_int = 0
         p_crustal = 1
         p_slab = 0
