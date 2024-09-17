@@ -13,7 +13,7 @@ To classify a Slab2 subduction region's earthquake catalog into upper plate/crus
 
     - python catalog_sep/src/classify_catalog.py $Slab2Region $PathToInputCatalog
 
-If you earthquake catalog files spans two subduction zones/slabs run
+If your earthquake catalog files spans two subduction zones/slabs run
 
     - python catalog_sep/src/classify_catalog.py $Slab2Region $PathToInputCatalog --second_slab $Slab2Region
 
