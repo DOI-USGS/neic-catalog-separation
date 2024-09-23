@@ -37,3 +37,14 @@ To calculate the b-value of the earthquake catalog, prepare an ASCII file contai
 Arguments required are name of the input file containing magnitudes, a starting/estimated magnitude of completeness (Mc), and a bin size. For example,
 
     - python catalog_sep/src/utils/calculate_bValue.py MagFile.in 4.5 0.1
+  
+# How to cite
+
+If you use this code or find it useful for your own purposes, please use the following citation:
+
+Haynie, K. L., Subduction zone earthquake catalog separation code, version 1.0.0: U.S. Geological Survey software release, https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation/-/releases/1.0.0. [https://doi.org/10.5066/P13E7CAY](https://doi.org/10.5066/P13E7CAY)
+
+# Links
+Disclaimer: [DISCLAIMER.md](./DISCLAIMER.md)
+
+License: [LICENSE.md](./LICENSE.md)
