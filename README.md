@@ -42,7 +42,7 @@ Arguments required are name of the input file containing magnitudes, a starting/
 
 If you use this code or find it useful for your own purposes, please use the following citation:
 
-Haynie, K. L., 2024, Subduction zone earthquake catalog separation code, version 1.0.0: U.S. Geological Survey software release, https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation/-/releases/1.0.0. [https://doi.org/10.5066/P13E7CAY](https://doi.org/10.5066/P13E7CAY)
+Haynie, K. L., 2024, Subduction zone earthquake catalog separation code, version 1.0.0: U.S. Geological Survey software release, [https://doi.org/10.5066/P13E7CAY](https://doi.org/10.5066/P13E7CAY)
 
 # Links/References
 Disclaimer: [DISCLAIMER.md](./DISCLAIMER.md)
