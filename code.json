@@ -3,7 +3,7 @@
     "name": "neic-catalog-segregation",
     "organization": "U.S. Geological Survey",
     "description": "Separates a subduction zone earthquake catalog into three tectonic regions: upper plate, interface, and lower plate",
-    "version": "main",
+    "version": "1.0.0",
     "status": "Development",
 
     "permissions": {
@@ -11,14 +11,14 @@
       "licenses": [
         {
           "name": "Public Domain, CC0-1.0",
-          "URL": "https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation/-/raw/main/LICENSE.md"
+          "URL": "https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation/-/raw/1.0.0/LICENSE.md"
         }
       ]
     },
 
     "homepageURL": "https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation",
-    "downloadURL": "https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation/-/archive/main/neic-catalog-segregation-main.zip",
-    "disclaimerURL": "https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation/-/raw/main/DISCLAIMER.md",
+    "downloadURL": "https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation/-/archive/1.0.0/neic-catalog-segregation-1.0.0.zip",
+    "disclaimerURL": "https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation/-/raw/1.0.0/DISCLAIMER.md",
     "repositoryURL": "https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation.git",
     "vcs": "git",
 
@@ -43,7 +43,7 @@
     },
 
     "date": {
-      "metadataLastUpdated": "2024-03-19"
+      "metadataLastUpdated": "2024-09-23"
     }
   }
 ]
