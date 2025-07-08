@@ -1,5 +1,4 @@
-Contributing
-============
+# Contributing
 
 Contributions are welcome from the community. Questions can be asked on the
 [issues page][1]. Before creating a new issue, please take a moment to search

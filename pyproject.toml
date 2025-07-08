@@ -8,7 +8,7 @@ profile = "black"
 
 [tool.poetry]
 name = "neic-catalog-separation"
-authors = ["Kirstie Haynie <khaynie@usgs.gov>"]
+authors = ["Kirstie Haynie <khaynie@usgs.gov>", "Brad Aagaard <baagaard@usgs.gov>"]
 description = "Separate/classify a subduction zone earthquake catalog into sub-catalogs: crustal, interface, intraslab."
 homepage = "https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation"
 include = [
@@ -17,18 +17,26 @@ include = [
 keywords = ["usgs", "neic", "nshm", "catalog", "earthquake"]
 license = "CC0-1.0"
 packages = [
-  { include = "src", from = "catalog_sep" }
+  { include = "neic_catalog_separation" }
 ]
 repository = "https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation"
-version = "1.0.0"
+version = "2.0.0"
+
+[tool.poetry.scripts]
+classify_catalog = "neic_catalog_separation.classify_catalog:cli"
+classify_fetch_mt = "neic_catalog_separation.utils.fetch_mt:cli"
+classify_separate_csv = "neic_catalog_separation.utils.separate_csv:cli"
+classify_calculate_bvalue = "neic_catalog_separation.utils.calculate_bvalue:cli"
 
 [tool.poetry.dependencies]
-python = ">=3.9,<=3.10"
-numpy = "1.23.2"
-pandas = "^1.4.3"
+python = ">=3.9,<4.0"
+numpy = ">=1.23.2"
+polars = ">=1.18.0"
 mapio = "^0.8"
+tqdm = ">=4.66.0"
+pyyaml = "^6.0.2"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 black = "^22.3.0"
 isort = "^5.10.1"
 pytest = "^6.2.4"
@@ -38,9 +46,9 @@ poethepoet = "^0.10.0"
 [tool.poe.tasks]
 # e.g. "poetry run poe lint"
 lint = [
-  { shell = "black --check catalog_sep/src" },
-  { shell = "isort --check catalog_sep/src" }
+  { shell = "black --check neic_catalog_separation" },
+  { shell = "isort --check neic_catalog_separation" }
 ]
 test = [
-  { shell = "pytest catalog_sep/src/test" }
+  { shell = "pytest tests" }
 ]
