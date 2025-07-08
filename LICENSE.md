@@ -1,5 +1,4 @@
-License
-=======
+# License
 
 Unless otherwise noted, This project is in the public domain in the United
 States because it contains materials that originally came from the United
@@ -10,13 +9,10 @@ https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credit
 Additionally, we waive copyright and related rights in the work
 worldwide through the CC0 1.0 Universal public domain dedication.
 
-
-CC0 1.0 Universal Summary
--------------------------
+## CC0 1.0 Universal Summary
 
 This is a human-readable summary of the
 [Legal Code (read the full text)][1].
-
 
 ### No Copyright
 
@@ -27,7 +23,6 @@ extent allowed by law.
 
 You can copy, modify, distribute and perform the work, even for commercial
 purposes, all without asking permission.
-
 
 ### Other Information
 
@@ -40,8 +35,6 @@ this deed makes no warranties about the work, and disclaims liability for
 all uses of the work, to the fullest extent permitted by applicable law.
 When using or citing the work, you should not imply endorsement by the
 author or the affirmer.
-
-
 
 [1]: https://creativecommons.org/publicdomain/zero/1.0/legalcode
 

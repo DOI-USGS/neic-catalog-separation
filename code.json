@@ -3,7 +3,7 @@
     "name": "neic-catalog-segregation",
     "organization": "U.S. Geological Survey",
     "description": "Separates a subduction zone earthquake catalog into three tectonic regions: upper plate, interface, and lower plate",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "status": "Development",
 
     "permissions": {
