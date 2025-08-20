@@ -13,23 +13,21 @@ def separate_input(catalog_filename: pathlib.Path, moment_tensors: bool):
         moment_tensors (bool): If True, also create files for events that have moment tensor data (default is False)
     """
     CLASSIFICATION = {
-        "u": "crustal",
-        "l": "intraslab",
-        "i": "interface",
-        "or": "outerrise",
+        "crustal": "crustal",
+        "subduction_intraslab": "intraslab",
+        "subduction_interface": "interface",
+        "subduction_outerrise": "outerrise",
     }
 
     data = polars.read_csv(catalog_filename)
-
     for key, group_name in CLASSIFICATION.items():
-        data_group = data.filter(data["eq_category"] == key)
-        filename = catalog_filename.replace(".csv", f"_{group_name}.csv")
-        data_group.to_csv(filename)
-
+        data_group = data.filter(polars.col("eq_category") == key)
+        filename = f"{group_name}.csv"
+        data_group.write_csv(filename)
         if moment_tensors:
-            data_mt = data_group.filter(data["S1"].is_not_null())
-            filename = catalog_filename.replace(".csv", f"_{group_name}_mt.csv")
-            data_mt.to_csv(filename)
+            data_mt = data_group.filter(polars.col("S1").is_not_nan())
+            filename = f"{group_name}_mt.csv"
+            data_mt.write_csv(filename)
 
 
 def cli():
@@ -54,7 +52,7 @@ def cli():
         action="store_true",
         dest="moment_tensors",
         default=False,
-        required=True,
+        required=False,
         help="Separate files for data that moment tensor information",
     )
 
