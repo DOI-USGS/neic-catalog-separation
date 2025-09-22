@@ -4,6 +4,8 @@ This project contains code for classifying (or separating) an earthquake catalog
 Code for calculating b-value for the resulting catalog(s) is also provided.
 Please send any inquires to Kirstie Haynie <khaynie@usgs.gov>.
 
+Note: the version of the code associated with the USGS Puerto Rice-U.S. Virgin Islands National Seismic Hazard Model (Haynie et al., 2025, SRL, accepted) is avaiable at https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation/-/tree/1.0.0?ref_type=tags. To cite this, see [How to Cite](#how-to-cite).
+
 # Installation and Dependencies
 
 This software uses Python version 3.9 or later.
