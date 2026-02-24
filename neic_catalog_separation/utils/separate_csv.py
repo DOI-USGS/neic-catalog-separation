@@ -17,6 +17,10 @@ def separate_input(catalog_filename: pathlib.Path, moment_tensors: bool):
         "subduction_intraslab": "intraslab",
         "subduction_interface": "interface",
         "subduction_outerrise": "outerrise",
+        "mantle": "mantle",
+        "crustal_mantle": "crustal_mantle",
+        "subduction_intraslab_mantle": "intraslab_mantle",
+        "subduction_interface_mantle": "interface_mantle",
     }
 
     data = polars.read_csv(catalog_filename)

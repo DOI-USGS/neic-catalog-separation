@@ -10,9 +10,11 @@ class EqType(Enum):
     SUBDUCTION_INTERFACE = 10
     SUBDUCTION_INTRASLAB = 11
     SUBDUCTION_OUTERRISE = 12
-    SUBDUCTION_INTERFACE_MANTLE = 20
-    SUBDUCTION_INTRASLAB_MANTLE = 21
-    SUBDUCTION_OUTERRISE_MANTLE = 22
+    MANTLE = 20
+    CRUSTAL_MANTLE = 21
+    SUBDUCTION_INTERFACE_MANTLE = 22
+    SUBDUCTION_INTRASLAB_MANTLE = 23
+    SUBDUCTION_OUTERRISE_MANTLE = 24
     UNKNOWN = NO_VALUE
 
     @staticmethod
@@ -35,6 +37,8 @@ class EqType(Enum):
             EqType.SUBDUCTION_INTERFACE: "subduction_interface",
             EqType.SUBDUCTION_INTRASLAB: "subduction_intraslab",
             EqType.SUBDUCTION_OUTERRISE: "subduction_outerrise",
+            EqType.MANTLE: "mantle",
+            EqType.CRUSTAL_MANTLE: "crustal_mantle",
             EqType.SUBDUCTION_INTERFACE_MANTLE: "subduction_interface_mantle",
             EqType.SUBDUCTION_INTRASLAB_MANTLE: "subduction_intraslab_mantle",
             EqType.SUBDUCTION_OUTERRISE_MANTLE: "subduction_outerrise_mantle",
@@ -42,7 +46,8 @@ class EqType(Enum):
 
     @staticmethod
     def mantle_mapping():
-        TO_MANTLE = {
+        return {
+            EqType.CRUSTAL: EqType.CRUSTAL_MANTLE,
             EqType.SUBDUCTION_INTERFACE: EqType.SUBDUCTION_INTERFACE_MANTLE,
             EqType.SUBDUCTION_INTRASLAB: EqType.SUBDUCTION_INTRASLAB_MANTLE,
             EqType.SUBDUCTION_OUTERRISE: EqType.SUBDUCTION_OUTERRISE_MANTLE,

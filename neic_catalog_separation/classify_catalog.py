@@ -10,7 +10,6 @@ import tqdm
 
 # local imports
 from . import classify_earthquake, data_sources, io
-from .eqtype import EqType
 
 
 def classify_catalog(
@@ -19,7 +18,8 @@ def classify_catalog(
     slab_region2: str,
     catalog_filename: str,
     config_filename: str,
-    tolerance: float = 15.0,
+    interface_tolerance: float = 15.0,
+    crust_tolerance: float = 15.0,
     nshm: bool = False,
     num_processes: int = 1,
 ) -> None:
@@ -51,14 +51,15 @@ def classify_catalog(
         results = []
         for earthquake in catalog.iter_rows(named=True):
             result = classify_earthquake.classify(
-                earthquake,
-                slab1,
-                slab2,
-                moho_depth,
-                seismogenic_depth,
-                nshm,
-                config,
-                tolerance,
+                earthquake=earthquake,
+                slab1=slab1,
+                slab2=slab2,
+                moho_depth=moho_depth,
+                seismogenic_depth=seismogenic_depth,
+                nshm=nshm,
+                config=config,
+                interface_tolerance=interface_tolerance,
+                crust_tolerance=crust_tolerance,
             )
             results.append(result)
             progress_monitor.update(1)
@@ -81,7 +82,8 @@ def classify_catalog(
                 seismogenic_depth,
                 nshm,
                 config,
-                tolerance,
+                interface_tolerance,
+                crust_tolerance,
             )
             future.add_done_callback(_update_progress_monitor)
             futures.append(future)
@@ -160,8 +162,15 @@ def cli():
         "--interface-tolerance",
         default=15.0,
         type=float,
-        dest="tolerance",
+        dest="interface_tolerance",
         help="Maximum distance from slab interface for earthquakes to be considered on the interface.",
+    )
+    argparser.add_argument(
+        "--crust-tolerance",
+        default=15.0,
+        type=float,
+        dest="crust_tolerance",
+        help="Maximum distance below Moho for earthquakes to be considered crustal.",
     )
     argparser.add_argument(
         "--num-processes",
@@ -187,7 +196,8 @@ def cli():
         slab_region2=slab_region2,
         catalog_filename=args.catalog_filename,
         config_filename=args.config_filename,
-        tolerance=args.tolerance,
+        interface_tolerance=args.interface_tolerance,
+        crust_tolerance=args.crust_tolerance,
         nshm=args.nshm,
         num_processes=args.num_processes,
     )

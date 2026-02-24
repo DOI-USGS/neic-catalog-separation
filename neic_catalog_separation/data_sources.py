@@ -3,7 +3,6 @@
 import pathlib
 
 import numpy as np
-import polars
 from mapio import reader
 
 from . import funcs
@@ -18,7 +17,9 @@ class Slab:
         self.error_grid = None
         self.strike_grid = None
         self.dip_grid = None
+        self.thickness_grid = None
         self.sup = None
+        self.valid_values = None
 
     def load(self, data_dir: pathlib.Path):
         """Load data.
@@ -45,8 +46,32 @@ class Slab:
         self.dip_grid = reader.read(
             _get_file(pattern=self.region + "_slab2_dip*.grd", data_dir=data_dir)
         )
+        self.thickness_grid = reader.read(
+            _get_file(pattern=self.region + "_slab2_thk*.grd", data_dir=data_dir)
+        )
         if self.region in ["man", "ker", "izu", "sol"]:
-            self.sup = polars.read_csv(data_dir / f"{self.region}_slab2_sup.csv")
+            self.sup = np.genfromtxt(
+                data_dir / f"{self.region}_slab2_sup.csv",
+                delimiter=",",
+                names=True,
+                encoding="utf-8",
+            )
+
+        # Set up grid with valid values used in getting nearest valid data
+        latitude, longitude = self.depth_grid.getLatLonMesh(
+            self.depth_grid.getGeoDict()
+        )
+        latitude = np.flipud(latitude)
+        depth = self.depth_grid.getData()
+        mask = ~np.isnan(depth)
+        depth = depth[mask]
+        latitude = latitude[mask]
+        longitude = longitude[mask]
+        self.valid_values = {
+            "latitude": latitude,
+            "longitude": longitude,
+            "depth": depth,
+        }
 
     def get_values(self, lat: float, lon: float) -> tuple:
         """Get slab values at location.
@@ -55,18 +80,45 @@ class Slab:
             lat: Latitude of location (degrees).
             lon: Longitude of location (degrees).
         Returns:
-            Tuple (depth, strike, dip, error) of slab information at location.
+            Tuple (depth, strike, dip, thickness, error) of slab information at location.
         """
         try:
             depth = self.depth_grid.getValue(lat, lon)
             error = self.error_grid.getValue(lat, lon)
             strike = self.strike_grid.getValue(lat, lon)
             dip = self.dip_grid.getValue(lat, lon)
+            thickness = self.thickness_grid.getValue(lat, lon)
             if strike < 0.0:
                 strike += 360.0
         except Exception:
-            depth = error = dip = strike = np.nan
-        return (abs(depth), strike, dip, error)
+            depth = error = dip = strike = thickness = np.nan
+        return (abs(depth), strike, dip, thickness, error)
+
+    def get_values_closest(self, lat: float, lon: float) -> tuple:
+        """Get information for closest point in grid that contains values.
+
+        Args:
+            lat: Latitude of location (degrees).
+            lon: Longitude of location (degrees).
+        Returns:
+            Tuple (depth, strike, dip, thickness, error, min_dist) of slab information at location.
+        """
+        latitude = self.valid_values["latitude"]
+        longitude = self.valid_values["longitude"]
+        geo_distance = funcs.haversine_distance(
+            points_lat=latitude,
+            points_lon=longitude,
+            target_lat=lat,
+            target_lon=lon,
+        )
+        min_index = np.argmin(geo_distance)
+        nearest_lat = latitude[min_index]
+        nearest_lon = longitude[min_index]
+        (depth, strike, dip, thickness, error) = self.get_values(
+            lat=nearest_lat, lon=nearest_lon
+        )
+        min_dist = geo_distance[min_index]
+        return (depth, strike, dip, thickness, error, min_dist)
 
     def get_overturned(self, lat: float, lon: float) -> tuple:
         """Get depth, strike, and dip in region with overturned slab.
@@ -80,31 +132,47 @@ class Slab:
         depth = np.nan
         strike = np.nan
         dip = np.nan
+        thickness = np.nan
 
         if self.sup is not None:
-            sup_lon = self.sup["lon"]
-            sup_lat = self.sup["lat"]
-            sup_depth = self.sup["depth"]
-            sup_strike = self.sup["strike"]
-            sup_dip = self.sup["dip"]
-            depth, strike, dip, min_dist = funcs.find_closest_loc(
-                lon=lon,
-                lat=lat,
-                sup_lon=sup_lon,
-                sup_lat=sup_lat,
-                sup_depth=sup_depth,
-                sup_strike=sup_strike,
-                sup_dip=sup_dip,
-            )
+            sup_nearest = self.find_nearest_sup(lon=lon, lat=lat)
             # dont want to classify events that are far from the tilted slab (such as outer rise or
             # events that may not have been filtered out), so correct for that here (in km; 1 degree lon/lat is
             # ~111 km. Slabs can span 10s of degrees lon/lat, so lets assume anything greater than 250 km/2.5 degrees here)
-            if min_dist > 250.0:
-                depth = np.nan
-                strike = np.nan
-                dip = np.nan
+            if sup_nearest["distance"] <= 250.0:
+                depth = sup_nearest["depth"]
+                strike = sup_nearest["strike"]
+                dip = sup_nearest["dip"]
+                thickness = sup_nearest["thickness"]
 
-        return (depth, strike, dip)
+        return (depth, strike, dip, thickness)
+
+    def find_nearest_sup(self, lon, lat):
+        """
+        Determine nearest lon,lat from tilted/vertical slab data to earthquake location and take tilted slab depth, strike, and dip at that point
+        Args:
+            lon (float): Earthquake longitude (deg)
+            lat (float): Earthquake latitude (deg)
+        Returns:
+            nearest_lon (float): closest lon
+            nearest_lat (float): closest lat
+            nearest_depth (float): closest depth
+            nearest_strike (float): closest strike
+            nearest_dip (float): closest dip
+            nearest_thickness (float): closest thickness
+            nearest_dist (float): Distance of closest point (km)
+        """
+        geo_distance = funcs.haversine_distance(
+            points_lat=self.sup["lat"],
+            points_lon=self.sup["lon"],
+            target_lat=lat,
+            target_lon=lon,
+        )
+        min_index = np.argmin(geo_distance)
+
+        sup_nearest = dict(zip(self.sup.dtype.names, self.sup[min_index]))
+        sup_nearest["distance"] = geo_distance[min_index]
+        return sup_nearest
 
     @staticmethod
     def find_closest(lat: float, lon: float, depth: float, slab1, slab2):
@@ -121,10 +189,10 @@ class Slab:
         """
         closest = slab1
 
-        slab1_depth, _, _, _ = slab1.get_values(lat=lat, lon=lon)
+        slab1_depth, _, _, _, _ = slab1.get_values(lat=lat, lon=lon)
         slab1_ddiff = np.abs(depth - slab1_depth)
 
-        slab2_depth, _, _, _ = slab2.get_values(lat=lat, lon=lon)
+        slab2_depth, _, _, _, _ = slab2.get_values(lat=lat, lon=lon)
         slab2_ddiff = np.abs(depth - slab2_depth)
 
         # if both depths are nan, then the earthquake is outside of slab2 region, and is likely crustal or outer rise
@@ -196,14 +264,18 @@ class SeismogenicDepth:
         Args:
             data_dir: Path to directory with seismogenic depth file.
         """
-        values = (
-            polars.read_csv(data_dir / "seismogenic_depth.csv")
-            .select(("Slab2 Code", "Sd (km)", "λ (º)"))
-            .to_dicts()
+        values = np.genfromtxt(
+            data_dir / "seismogenic_depth.csv",
+            delimiter=",",
+            names=True,
+            dtype=None,
+            encoding="utf-8",
         )
-        self.data = dict([(d["Slab2 Code"], d) for d in values])
+        self.data = dict(
+            [(d["Slab2_Code"], dict(zip(values.dtype.names, d))) for d in values]
+        )
         for d in self.data.values():
-            del d["Slab2 Code"]
+            del d["Slab2_Code"]
 
     def get_values(self, slab_region: str, nshm: bool = False) -> tuple:
         """Get depth to the deep limit of the seismogenic zone based on Slab2.
@@ -223,8 +295,8 @@ class SeismogenicDepth:
             depth = 40.0
         elif slab_region in self.data:
             values = self.data[slab_region]
-            depth = values["Sd (km)"]
-            rake = values["λ (º)"]
+            depth = values["Sd_km"]
+            rake = values["λ_º"]
         else:
             pass  # use defaults
 
