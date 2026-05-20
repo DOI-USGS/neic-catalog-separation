@@ -1,11 +1,26 @@
 # Degree of membership parameters
 
+# Maximum distance from slab to consider as outer rise
+outerrise_maxdist: 250.0
+
+# Max depth of slab at closest point to detect outer rise region
+outerrise_slab_maxdepth: 30.0
+
+p_outerrise_slab:
+  p1: 1.0
+  p2: 0.0
+
 # Calculate interface degree of membership given Kagan's angle
 p_interface_kagan:
   x1: 30.0
   p1: 1.0
   x2: 53.0
   p2: 0.25
+
+# Calculate interface degree of membership given depth relative to slab interface
+p_interface_slab:
+  p1: 0.0
+  p2: 1.0
 
 # Calculate interface degree of membership given depth below seismogenic zone
 p_interface_sz:
@@ -18,13 +33,33 @@ p_interface_fx:
   p2: 0.4
 
 # Calculate crustal degree of membership given depth relative to slab depth
-p_crust_diff:
+p_crustal_slab:
   x1: -20.0
   p1: 1.0
   x2: 20.0
   p2: 0.0
 
-# Calculate crustal degree of membership given depth relative to slab depth and moho depth
-p_crust_slab:
+# Calculate crustal degree of membership given depth relative to Moho depth and slab depth
+p_crustal_moho_slab:
+  p1: 1.0
+  p2: 0.0
+
+# Calculate crustal degree of membership given depth relative to moho depth
+p_crustal_moho:
+  p1: 1.0
+  p2: 0.0
+
+# Calculate outer-rise degree of membership given depth relative to moho depth
+p_outerrise_moho:
+  p1: 1.0
+  p2: 0.0
+
+# Calculate intraslab degree of membership given depth relative to top of slab
+p_intraslab_interface:
+  p1: 0.0
+  p2: 1.0
+
+# Calculate intraslab degree of membership given depth relative to bottom of slab
+p_intraslab_slab:
   p1: 1.0
   p2: 0.0
