@@ -1,10 +1,10 @@
 # Degree of membership parameters
 
 # Maximum distance from slab to consider as outer rise
-outerrise_maxdist: 250.0
+outerrise_maxdist: 600.0
 
 # Max depth of slab at closest point to detect outer rise region
-outerrise_slab_maxdepth: 30.0
+outerrise_slab_maxdepth: 100.0
 
 p_outerrise_slab:
   p1: 1.0
@@ -47,7 +47,7 @@ p_crustal_moho_slab:
 # Calculate crustal degree of membership given depth relative to moho depth
 p_crustal_moho:
   p1: 1.0
-  p2: 0.0
+  p2: 0.1
 
 # Calculate outer-rise degree of membership given depth relative to moho depth
 p_outerrise_moho:
@@ -62,4 +62,4 @@ p_intraslab_interface:
 # Calculate intraslab degree of membership given depth relative to bottom of slab
 p_intraslab_slab:
   p1: 1.0
-  p2: 0.0
+  p2: 0.1

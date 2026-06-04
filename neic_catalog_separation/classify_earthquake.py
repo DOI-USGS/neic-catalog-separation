@@ -87,6 +87,7 @@ def classify(
                 slab_dip_eq,
                 slab_thickness_eq,
             ) = slab_closest.get_overturned(lat=eq_lat, lon=eq_lon)
+            slab_uncertainty_eq = 0.0
 
     # initialize probabilities and category
     p_interface = 0.0
@@ -121,6 +122,8 @@ def classify(
                 p_mantle = 1.0 - p_crustal
 
         else:
+            # see result with no mantle category - i think i want to make updates so NSHM excludes mantle again
+            p_mantle = 0.0
             # band-aid for USGS PRVI NSHM - mark events outside/seaward of the 0 km slab grids as outer-rise, but events in the
             # specified bounding box below are outside the slab grids but crustal (i.e., not outer-rise), so mark those accordingly
             if slab_closest.region in ["mue", "car"]:
@@ -154,7 +157,7 @@ def classify(
                         p1=config["p_outerrise_slab"]["p1"],
                         p2=config["p_outerrise_slab"]["p2"],
                     )
-                    p_mantle = 1.0 - p_outerrise
+                    # p_mantle = 1.0 - p_outerrise
                 else:  # not outer rise region, so assume crustal
                     if np.isnan(moho_depth_eq):
                         p_crustal = 1.0
@@ -168,7 +171,7 @@ def classify(
                             p1=config["p_crustal_moho"]["p1"],
                             p2=config["p_crustal_moho"]["p2"],
                         )
-                        p_mantle = 1.0 - p_crustal
+                        # p_mantle = 1.0 - p_crustal
 
     else:
         # Determine Kagan angle between fault plane and slab:
@@ -180,6 +183,11 @@ def classify(
             kagan = np.nan
 
         # Determine interface probability:
+        # define shallowest slab surface & deepest slab surface based on slab depth & slab depth uncertainty
+        shallow_slab_eq = slab_depth_eq - slab_uncertainty_eq
+        if shallow_slab_eq < 0.0:
+            shallow_slab_eq = 0.0
+        deep_slab_eq = slab_depth_eq + slab_uncertainty_eq
 
         # Calculate the probability that the EQ occurred along the interface given the
         # EQ location and depth to slab +/- a tolerance (buffer) value around the slab
@@ -234,7 +242,7 @@ def classify(
 
         # Crust: Depth relative to slab.
         p_crustal_slab = funcs.get_probability(
-            x=eq_depth - slab_depth_eq,
+            x=eq_depth - shallow_slab_eq,
             x1=config["p_crustal_slab"]["x1"],
             x2=config["p_crustal_slab"]["x2"],
             p1=config["p_crustal_slab"]["p1"],
@@ -246,7 +254,7 @@ def classify(
             x=eq_depth,
             x1=moho_depth_eq,
             p1=config["p_crustal_moho_slab"]["p1"],
-            x2=slab_depth_eq,
+            x2=deep_slab_eq,
             p2=config["p_crustal_moho_slab"]["p2"],
         )
         p_crustal = (
@@ -256,8 +264,8 @@ def classify(
         # Intraslab: Depth relative to interface
         p_intraslab_interface = funcs.get_probability(
             x=eq_depth,
-            x1=slab_depth_eq,
-            x2=slab_depth_eq + interface_tolerance,
+            x1=shallow_slab_eq,
+            x2=deep_slab_eq + interface_tolerance,
             p1=config["p_intraslab_interface"]["p1"],
             p2=config["p_intraslab_interface"]["p2"],
         )
@@ -265,23 +273,28 @@ def classify(
         # Intraslab: Depth relative to interface + slab thickness
         p_intraslab_slab = funcs.get_probability(
             x=eq_depth,
-            x1=slab_depth_eq + slab_thickness_eq,
-            x2=slab_depth_eq + slab_thickness_eq + interface_tolerance,
+            x1=shallow_slab_eq,
+            x2=deep_slab_eq + slab_thickness_eq,
             p1=config["p_intraslab_slab"]["p1"],
             p2=config["p_intraslab_slab"]["p2"],
         )
         p_intraslab = p_intraslab_interface * p_intraslab_slab
 
-        p_sum = p_interface + p_crustal + p_intraslab
-        if p_sum > 1.0:  # overlapping regions
-            p_interface /= p_sum
-            p_crustal /= p_sum
-            p_intraslab /= p_sum
-
-        p_mantle = 1.0 - (p_interface + p_crustal + p_intraslab)
+    p_sum = p_interface + p_intraslab + p_crustal + p_mantle + p_outerrise
+    # print("p_sum1", p_sum)
+    if p_sum > 1.0:  # overlapping regions
+        p_interface /= p_sum
+        p_crustal /= p_sum
+        p_intraslab /= p_sum
+    if p_sum < 1.0 and p_sum != 0.0:  # this can happen when excluding p_mantle, so normalize
+        p_interface /= p_sum
+        p_crustal /= p_sum
+        p_intraslab /= p_sum
+    # print("p_sum2", p_sum)
+    # p_mantle = 1.0 - (p_interface + p_crustal + p_intraslab)
 
     total = p_interface + p_intraslab + p_crustal + p_mantle + p_outerrise
-    if abs(total - 1.0) > 0.01:
+    if abs(total - 1.0) > 0.01 and total != 0.0:
         print(
             f"WARNING: Total ({total}) is not 1.0. "
             f"p_interface={p_interface} "
