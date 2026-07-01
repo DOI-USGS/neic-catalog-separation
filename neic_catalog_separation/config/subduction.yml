@@ -6,6 +6,9 @@ outerrise_maxdist: 600.0
 # Max depth of slab at closest point to detect outer rise region
 outerrise_slab_maxdepth: 100.0
 
+# If using the --int-cutoff flag, use this value for the interface cutoff depth (km)
+int_cutoff: 62.0
+
 p_outerrise_slab:
   p1: 1.0
   p2: 0.0
@@ -47,7 +50,7 @@ p_crustal_moho_slab:
 # Calculate crustal degree of membership given depth relative to moho depth
 p_crustal_moho:
   p1: 1.0
-  p2: 0.1
+  p2: 0.0
 
 # Calculate outer-rise degree of membership given depth relative to moho depth
 p_outerrise_moho:
@@ -62,4 +65,4 @@ p_intraslab_interface:
 # Calculate intraslab degree of membership given depth relative to bottom of slab
 p_intraslab_slab:
   p1: 1.0
-  p2: 0.1
+  p2: 0.0

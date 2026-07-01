@@ -1,10 +1,10 @@
 # Introduction
 
-This project contains code for classifying (or separating) an earthquake catalog into three tectonic regions: upper plate, interface, and lower plate.
+This project contains code for classifying (or separating) an earthquake catalog into various tectonic regions: crustal, interface, intraslab, mantle, and outer-rise. If there an equal probability among these categories, the earthquak is assgined an unknown category.
 Code for calculating b-value for the resulting catalog(s) is also provided.
-Please send any inquires to Kirstie Haynie <khaynie@usgs.gov>.
+Please send any inquires to Kirstie Haynie (<khaynie@usgs.gov>).
 
-Note: the version of the code associated with the USGS Puerto Rice-U.S. Virgin Islands National Seismic Hazard Model (Haynie et al., 2025, SRL, accepted) is avaiable at https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation/-/tree/1.0.0?ref_type=tags. To cite this, see [How to Cite](#how-to-cite).
+Note: the version of the code associated with the USGS Puerto Rico-U.S. Virgin Islands National Seismic Hazard Model (see [Haynie et al., 2025, SRL](https://pubs.geoscienceworld.org/ssa/srl/article/97/2A/1191/661894/Subduction-Zone-Earthquake-Catalog-Separation-Tool)) is avaiable at <https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation/-/tree/1.0.0?ref_type=tags>. To cite the code, refer to [How to Cite](#how-to-cite).
 
 # Installation and Dependencies
 
@@ -25,26 +25,26 @@ pip install .
 
 This code was designed to work with U.S. Geological Survey (USGS) Slab2 subduction zones and Slab2 data from Hayes et. al., (2018).
 The catalog input file requires the following columns:
-  - `id` (earthquake id)
-  - `longitude` (longitude of earthquake in degrees)
-  - `latitude` (latitude of earthquake in degrees)
-  - `depth` (depth of earthquake in km)
-  - `S1` (strike angle of first nodal plane in degrees)
-  - `D1` (dip angle of first nodal plane in degrees)
-  - `R1` (rake angle of first nodal plane in degrees)
-  - `Ppl` (Plunge angle of p axis in degrees)
-  - `Tpl` (Plunge angle of t axis in degrees)
-Additional columns are ignored.
+
+- `id` (earthquake id)
+- `longitude` (longitude of earthquake in degrees)
+- `latitude` (latitude of earthquake in degrees)
+- `depth` (depth of earthquake in km)
+- `S1` (strike angle of first nodal plane in degrees)
+- `D1` (dip angle of first nodal plane in degrees)
+- `R1` (rake angle of first nodal plane in degrees)
+- `Ppl` (Plunge angle of p axis in degrees)
+- `Tpl` (Plunge angle of t axis in degrees)
+  Additional columns are ignored.
 
 Please note that this is a heuristic code, such that certain parameters were set according to testing with a global catalog.
 You are encouraged to update values to best reflect the subduction zone(s) for your use case.
 The parameters can be updated in [config/subduction.yml](neic_catalog_separation/config/subduction.yml).
 
 ```bash
-usage: classify_catalog [-h] [--slab2-regions SLAB2_REGIONS] [--catalog CATALOG_FILENAME] [--output OUTPUT] [--config CONFIG_FILE] [--nshm]
-                        [--interface-tolerance TOLERANCE] [--num-processes NUM_PROCESSES]
+usage: classify_catalog [-h] [--slab2-regions SLAB2_REGIONS] [--catalog CATALOG_FILENAME] [--output OUTPUT] [--config CONFIG_FILE] [--nshm] [--no-mantle] [--tolerance TOLERANCE] [--int-cutoff] [--num-processes NUM_PROCESSES]
 
-    Classify a Slab2 Region Earthquake Catalog. Use one of the 3 letter abbreviations for the Slab2 region catalog to classify
+    Classify an Earthquake Catalog within a Slab2 Region. Use the 3 letter abbreviations below for the Slab2 region(s) the eartqhuake catalog covers.
 
     Slab2 regions include:
 
@@ -75,9 +75,10 @@ usage: classify_catalog [-h] [--slab2-regions SLAB2_REGIONS] [--catalog CATALOG_
         Sulawesi                sul
         Sumatra/Java            sum
         Vanuatu                 van
-    
+
 
 options:
+
   -h, --help            show this help message and exit
   --slab2-regions SLAB2_REGIONS
                         Comma separated list of names of Slab2 regions. Currently limited to a maximum of two regions.
@@ -85,11 +86,16 @@ options:
                         Path and file name for the input catalog to separate (must be CSV file format).
   --output OUTPUT       Path and file name for the output file.
   --config CONFIG_FILE  Path and file name for the configuration file. If not provided, the default configuration is used.
-  --nshm                Classify earthquakes outside of the specified Slab2 region.
-  --interface-tolerance TOLERANCE
-                        Maximum distance from slab interface for earthquakes to be considered on the interface.
+  --tolerance TOLERANCE
+                        Maximum distance (km) used as a tolerance or buffer for determining the maximum deep seismogenic zone depth cutoff and zone around the slab interface in which earthquakes are considered on the interface. Default is 15.0 km.
+  --crust-tolerance CRUST_TOLERANCE
+                        Maximum distance (km) below the Moho for earthquakes to be considered crustal. Default is 15.0 km.
   --num-processes NUM_PROCESSES
                         Number of processes to use in classification.
+  --nshm                Classify earthquakes outside of the specified Slab2 region as outer-rise.
+  --no-mantle           Do not include mantle as a classification category.
+  --int-cutoff
+                      Impose a maximum depth (km) that favors an interface classification such that intraslab calculations are not included above this depth. By default, this flag is not included. If user includes this flag the default value is 62.0 km. This can be changed in the subduction.yml config file.
 ```
 
 ### Examples
@@ -113,6 +119,17 @@ To see a full list of the Slab2 subduction zones with abbreviations and command 
 classify_catalog --help
 ```
 
+An example script is also provided that will create a test earthquake catalog for very longitude, latitude, and depth along a user supplied cross-section, classify the cross-section, and plot the results. To use this example script, navigate to the `examples` directory and run
+
+```bash
+plot_classification_slice.py --help
+```
+
+For example, the following will create a catalog for a cross-section along -17&deg; from -172&deg; to -178&deg; in the Kermadec Slab2 region to a depth of 450 km, classify that catalog, then plot the result as a HTML file that can be opened in a web browser
+
+````bash
+plot_classification_slice.py --latitude -17 --max-longitude -172 --min-longitude -178 --max-depth 450 --region ker --create-catalog --classify --plot
+
 ## Helpful utilities
 
 ### `clasify_fetch_mt`
@@ -123,27 +140,27 @@ Fetch moment tensors from ANSS ComCat for use in the classification process.
 usage: classify_fetch_mt [-h] --catalog CATALOG --output OUTPUT
 
 Query ComCat for moment tensors for event ID's provided in a catalog CSV file
-    
+
 
 options:
   -h, --help         show this help message and exit
   --catalog CATALOG  Name of input earthquake catalog file containing earthquake ids.
   --output OUTPUT    Name of output file.
-```
+````
 
 ### `classify_separate_csv`
 
-Separate the output comma-separated values (CSV) file from `classify_catalog.py` into three files, one for each separated region (crustal, interface, and intraslab) use
+Separate the output comma-separated values (CSV) file from `classify_catalog.py` into separate files based on classification.
 
 ```bash
 usage: classify_separate_csv [-h] --catalog CATALOG --moment-tensors
 
     Separate the output from running classify_catalog into files based on classification.
-    
+
 
 options:
   -h, --help         show this help message and exit
-  --catalog CATALOG  Name of catalog file to separate into classified sub-files (crustal, interface, slab, mantle)
+  --catalog CATALOG  Name of catalog file to separate into classified sub-files (crustal, interface, slab, mantle, outerrise)
   --moment-tensors   Separate files for data that moment tensor information
 ```
 

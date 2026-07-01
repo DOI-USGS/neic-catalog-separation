@@ -18,10 +18,12 @@ def classify_catalog(
     slab_region2: str,
     catalog_filename: str,
     config_filename: str,
-    interface_tolerance: float = 15.0,
+    tolerance: float = 15.0,
     crust_tolerance: float = 15.0,
-    nshm: bool = False,
     num_processes: int = 1,
+    nshm: bool = False,
+    no_mantle: bool = False,
+    int_cutoff: bool = False,
 ) -> None:
     """Reads in files and sets up arguments to the function classify_earthquake,
     which runs in parallel and determines probability that an event occurred in
@@ -58,7 +60,9 @@ def classify_catalog(
                 seismogenic_depth=seismogenic_depth,
                 nshm=nshm,
                 config=config,
-                interface_tolerance=interface_tolerance,
+                tolerance=tolerance,
+                int_cutoff=int_cutoff,
+                no_mantle=no_mantle,
                 crust_tolerance=crust_tolerance,
             )
             results.append(result)
@@ -81,8 +85,10 @@ def classify_catalog(
                 moho_depth,
                 seismogenic_depth,
                 nshm,
+                no_mantle,
                 config,
-                interface_tolerance,
+                tolerance,
+                int_cutoff,
                 crust_tolerance,
             )
             future.add_done_callback(_update_progress_monitor)
@@ -159,11 +165,23 @@ def cli():
         help="Classify earthquakes outside of the specified Slab2 region.",
     )
     argparser.add_argument(
-        "--interface-tolerance",
+        "--no-mantle",
+        action="store_true",
+        dest="no_mantle",
+        help="Do not include mantle as a classification category.",
+    )
+    argparser.add_argument(
+        "--tolerance",
         default=15.0,
         type=float,
-        dest="interface_tolerance",
-        help="Maximum distance from slab interface for earthquakes to be considered on the interface.",
+        dest="tolerance",
+        help="Maximum distance (km) used as a tolerance or buffer for determining the maximum deep seismogenic zone depth cutoff and zone around the slab interface in which earthquakes are considered on the interface.",
+    )
+    argparser.add_argument(
+        "--int-cutoff",
+        action="store_true",
+        dest="int_cutoff",
+        help="Impose a maximum depth (km) that favors an interface classification such that intraslab calculations are not included above this depth.",
     )
     argparser.add_argument(
         "--crust-tolerance",
@@ -196,8 +214,10 @@ def cli():
         slab_region2=slab_region2,
         catalog_filename=args.catalog_filename,
         config_filename=args.config_filename,
-        interface_tolerance=args.interface_tolerance,
+        tolerance=args.tolerance,
         crust_tolerance=args.crust_tolerance,
-        nshm=args.nshm,
         num_processes=args.num_processes,
+        nshm=args.nshm,
+        no_mantle=args.no_mantle,
+        int_cutoff=args.int_cutoff,
     )

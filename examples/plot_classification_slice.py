@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 """Application to show earthquake classification based on position.
 
-:TODO: Add Moho depth on plot.
-:TODO: Add slab interface on plot.
-:TODO: Add Moho 'buffer' on plot.
-:TODO: Add slab thickness on plot.
-:TODO: Add slab interface 'buffer' on plot.
-:TODO: Add slab thickness 'buffer' on plot.
+# :TODO: Add Moho depth on plot.
+# :TODO: Add slab interface on plot.
+# :TODO: Add Moho 'buffer' on plot.
+# :TODO: Add slab thickness on plot.
+# :TODO: Add slab interface 'buffer' on plot.
+# :TODO: Add slab thickness 'buffer' on plot.
 """
-
 import dataclasses
 import pathlib
 
@@ -234,8 +233,10 @@ class PlotSlice:
             / "config"
             / "subduction.yml",
             num_processes=n_processes,
-            interface_tolerance=20.0,
+            tolerance=15.0,
             nshm=True,
+            no_mantle=False,
+            int_cutoff=False,
         )
 
     def plot(self, filename: pathlib.Path, backend: str = "plotly"):
@@ -303,7 +304,18 @@ class PlotSlice:
                 "p_outerrise": data.p_outerrise,
                 "p_mantle": data.p_mantle,
             },
-            color_discrete_sequence=plotly.colors.qualitative.Bold,
+            color_discrete_map={
+                "crustal": "orange",
+                "subduction_interface": "orchid",
+                "subduction_intraslab": "darkgray",
+                "subduction_outerrise": "red",
+                "mantle": "wheat",
+                "crustal_mantle": "salmon",
+                "subduction_interface_mantle": "purple",
+                "subduction_intraslab_mantle": "lightslategray",
+                "subduction_outerrise_mantle": "darkred",
+                "unknown": "pink",
+            },
             title="Vertical cross section",
             labels={
                 "x": "Longitude",

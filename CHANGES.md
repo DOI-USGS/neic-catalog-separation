@@ -20,3 +20,7 @@
   - Add number of processes as a command line parameter.
   - Add configuration file as optional command line parameter.
   - Add progress bar using tqdm.
+  - Add no mantle option as command line parameter (False is default).
+  - Add interface cutoff option as command line parameter (False is default).
+  - Take into account slab depth uncertainty.
+  - Take into account slab thickness.

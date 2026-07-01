@@ -18,14 +18,6 @@ class EqType(Enum):
     UNKNOWN = NO_VALUE
 
     @staticmethod
-    def flag_mantle(eq_type):
-        mantle = EqType.mantle_mapping()
-        if mantle is not None:
-            return mantle.get(eq_type, EqType.UNKNOWN)
-        else:
-            return EqType.UNKNOWN
-
-    @staticmethod
     def to_string(eq_type):
         return EqType.str_mapping().get(eq_type, "unknown")
 
