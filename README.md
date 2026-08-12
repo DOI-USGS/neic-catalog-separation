@@ -24,6 +24,7 @@ pip install .
 # How to use
 
 This code was designed to work with U.S. Geological Survey (USGS) Slab2 subduction zones and Slab2 data from Hayes et. al., (2018).
+
 The catalog input file requires the following columns:
 
 - `id` (earthquake id)
@@ -38,6 +39,7 @@ The catalog input file requires the following columns:
   Additional columns are ignored.
 
 Please note that this is a heuristic code, such that certain parameters were set according to testing with a global catalog.
+
 You are encouraged to update values to best reflect the subduction zone(s) for your use case.
 The parameters can be updated in [config/subduction.yml](neic_catalog_separation/config/subduction.yml).
 
@@ -110,6 +112,9 @@ classify_catalog --slab2-regions=SLAB_REGION1,SLAB_REGION2 --catalog=CATALOG_FIL
 ```
 
 The `SLAB_REGION` should be the three-letter abbreviation associated with the Slab2 subduction zone of interest.
+
+The code classifies sub-mantle categories (e.g., crustal mantle) by default. To re-map these categories to their primary category, uncomment the `rename` section in [config/subduction.yml](neic_catalog_separation/config/subduction.yml) before running `classify_catalog`. The mappings specified here can also be edited based on the user's needs.
+
 To see a full list of the Slab2 subduction zones with abbreviations and command line arguments run
 
 ```bash
@@ -124,8 +129,9 @@ plot_classification_slice.py --help
 
 For example, the following will create a catalog for a cross-section along -17&deg; from -172&deg; to -178&deg; in the Kermadec Slab2 region to a depth of 450 km, classify that catalog, then plot the result as a HTML file that can be opened in a web browser
 
-````bash
+```bash
 plot_classification_slice.py --latitude -17 --max-longitude -172 --min-longitude -178 --max-depth 450 --region ker --create-catalog --classify --plot
+```
 
 ## Helpful utilities
 
@@ -143,7 +149,7 @@ options:
   -h, --help         show this help message and exit
   --catalog CATALOG  Name of input earthquake catalog file containing earthquake ids.
   --output OUTPUT    Name of output file.
-````
+```
 
 ### `classify_separate_csv`
 
