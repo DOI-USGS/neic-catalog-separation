@@ -44,3 +44,21 @@ class EqType(Enum):
             EqType.SUBDUCTION_INTRASLAB: EqType.SUBDUCTION_INTRASLAB_MANTLE,
             EqType.SUBDUCTION_OUTERRISE: EqType.SUBDUCTION_OUTERRISE_MANTLE,
         }
+
+    @staticmethod
+    def rename_category(config):
+        """
+        Re-name earthquake categories by what is specified in the config file's rename section.
+        Function written with assistance from Kiro 2.16.2 claude-sonnet-5
+        """
+        rename_config = config["rename"]
+        name_to_eqtype = {name: eq_type for eq_type, name in EqType.str_mapping().items()}
+
+        def _to_eqtype(value):
+            name = value.split(".", 1)[1] if value.startswith("EqType.") else value
+            return name_to_eqtype.get(name.lower(), EqType[name.upper()])
+
+        return {
+            _to_eqtype(from_name): _to_eqtype(to_name)
+            for from_name, to_name in rename_config.items()
+        }
