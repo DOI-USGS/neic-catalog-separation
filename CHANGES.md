@@ -20,7 +20,6 @@
   - Add number of processes as a command line parameter.
   - Add configuration file as optional command line parameter.
   - Add progress bar using tqdm.
-  - Add no mantle option as command line parameter (False is default).
-  - Add interface cutoff option as command line parameter (False is default).
+  - Add option to re-map categories based on user specified mapping in subduction.yml.
   - Take into account slab depth uncertainty.
   - Take into account slab thickness.
