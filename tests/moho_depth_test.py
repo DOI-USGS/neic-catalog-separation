@@ -8,12 +8,13 @@ from neic_catalog_separation import data_sources
 @pytest.fixture
 def moho_depth():
     """"""
-    data_dir = pathlib.Path(data_sources.__file__).parent.resolve() / "data" / "crust1.0"
+    data_dir = (
+        pathlib.Path(data_sources.__file__).parent.resolve() / "data" / "crust1.0"
+    )
     return data_sources.moho_depth(data_dir=data_dir)
 
 
 class TestMohoDepth:
-
     def test_get_value(self, moho_depth):
         eq = {"lat": -33.683, "lon": -72.161}
 

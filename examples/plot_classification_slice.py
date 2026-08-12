@@ -235,7 +235,6 @@ class PlotSlice:
             num_processes=n_processes,
             tolerance=15.0,
             nshm=True,
-            no_mantle=False,
             int_cutoff=False,
         )
 

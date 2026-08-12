@@ -20,7 +20,6 @@ def classify(
     tolerance: float,
     crust_tolerance: float,
     nshm: bool,
-    no_mantle: bool,
     int_cutoff: bool,
 ) -> dict:
     """Determine probability that an event occurred in the upper plate (crustal), lower plate (intraslab), or along the subduction interface
@@ -31,7 +30,6 @@ def classify(
         moho_depth: Depth of Moho (km)
         seismogenic_depth: Seismogenic depth of interface (km).
         nshm (boolean): whether or not the input catalog is a USGS NSHM catalog (if True, then events outside of the slab2 regions will be classified as outer-rise instead of not being calssfied)
-        no_mantle (boolean): Default includes a manlte classification, else setting this to True excludes the mantle classification.
         config (dict): name of config file.
         tolerance (float): Distance (km) from interface at which probability is 0.
         int_cutoff (boolean): Whether to impose a depth (km) in which only crustal and interface probabilities are determined (i.e., below this depth the intraslab classification calculations are included).
@@ -121,10 +119,7 @@ def classify(
                     p1=config["p_crustal_moho"]["p1"],
                     p2=config["p_crustal_moho"]["p2"],
                 )
-                if no_mantle:
-                    p_mantle = 0.0
-                else:
-                    p_mantle = 1.0 - p_crustal
+                p_mantle = 1.0 - p_crustal
 
         else:
             (
@@ -146,13 +141,7 @@ def classify(
                     p1=config["p_outerrise_slab"]["p1"],
                     p2=config["p_outerrise_slab"]["p2"],
                 )
-                if no_mantle:
-                    p_mantle = 0.0
-                    # if no mantle, then make any outer-rise mantle, outer-rise
-                    if p_outerrise == 0.0:
-                        p_outerrise = 1.0
-                else:
-                    p_mantle = 1.0 - p_outerrise
+                p_mantle = 1.0 - p_outerrise
             else:  # not outer rise region, so assume crustal
                 if np.isnan(moho_depth_eq):
                     p_crustal = 1.0
@@ -166,10 +155,7 @@ def classify(
                         p1=config["p_crustal_moho"]["p1"],
                         p2=config["p_crustal_moho"]["p2"],
                     )
-                    if no_mantle:
-                        p_mantle = 0.0
-                    else:
-                        p_mantle = 1.0 - p_crustal
+                    p_mantle = 1.0 - p_crustal
 
     else:
         # define shallowest slab surface & deepest slab surface based on slab depth & slab depth uncertainty
@@ -314,15 +300,7 @@ def classify(
             p_crustal /= p_sum
             p_intraslab /= p_sum
             p_outerrise /= p_sum
-        if no_mantle:
-            p_mantle = 0.0
-            if p_sum < 1.0 and p_sum != 0.0:
-                p_interface /= p_sum
-                p_crustal /= p_sum
-                p_intraslab /= p_sum
-                p_outerrise /= p_sum
-        else:
-            p_mantle = 1.0 - (p_interface + p_crustal + p_intraslab)
+        p_mantle = 1.0 - (p_interface + p_crustal + p_intraslab)
 
         total = p_interface + p_intraslab + p_crustal + p_mantle + p_outerrise
         if abs(total - 1.0) > 0.01 and total != 0.0:
@@ -360,6 +338,10 @@ def classify(
         eq_strike=eq_strike,
         slab_strike=slab_strike_eq,
     )
+
+    # If a rename mapping is specified in the config file, remap this earthquake's category
+    if "rename" in config:
+        eq_category = EqType.rename_category(config).get(eq_category, eq_category)
 
     classification = earthquake.copy()
     classification.update(

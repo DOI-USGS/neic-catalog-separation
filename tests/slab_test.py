@@ -36,7 +36,6 @@ def slab_sol(data_dir):
 
 
 class TestSlab:
-
     def test_get_values(self, slab_sam):
         eq = {"lat": -33.683, "lon": -72.161}
 

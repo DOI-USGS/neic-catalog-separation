@@ -66,3 +66,11 @@ p_intraslab_interface:
 p_intraslab_slab:
   p1: 1.0
   p2: 0.0
+
+# To re-name/re-map any categories, uncomment the renaming dictionary below. This can be edited as desired.
+# rename:
+#   crustal_mantle: EqType.CRUSTAL
+#   mantle: EqType.UNKNOWN
+#   subduction_interface_mantle: EqType.SUBDUCTION_INTERFACE
+#   subduction_intraslab_mantle: EqType.SUBDUCTION_INTRASLAB
+#   subduction_outerrise_mantle: EqType.SUBDUCTION_OUTERRISE

@@ -22,7 +22,6 @@ def classify_catalog(
     crust_tolerance: float = 15.0,
     num_processes: int = 1,
     nshm: bool = False,
-    no_mantle: bool = False,
     int_cutoff: bool = False,
 ) -> None:
     """Reads in files and sets up arguments to the function classify_earthquake,
@@ -62,7 +61,6 @@ def classify_catalog(
                 config=config,
                 tolerance=tolerance,
                 int_cutoff=int_cutoff,
-                no_mantle=no_mantle,
                 crust_tolerance=crust_tolerance,
             )
             results.append(result)
@@ -85,7 +83,6 @@ def classify_catalog(
                 moho_depth,
                 seismogenic_depth,
                 nshm,
-                no_mantle,
                 config,
                 tolerance,
                 int_cutoff,
@@ -165,12 +162,6 @@ def cli():
         help="Classify earthquakes outside of the specified Slab2 region.",
     )
     argparser.add_argument(
-        "--no-mantle",
-        action="store_true",
-        dest="no_mantle",
-        help="Do not include mantle as a classification category.",
-    )
-    argparser.add_argument(
         "--tolerance",
         default=15.0,
         type=float,
@@ -218,6 +209,5 @@ def cli():
         crust_tolerance=args.crust_tolerance,
         num_processes=args.num_processes,
         nshm=args.nshm,
-        no_mantle=args.no_mantle,
         int_cutoff=args.int_cutoff,
     )

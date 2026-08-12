@@ -52,7 +52,9 @@ class EqType(Enum):
         Function written with assistance from Kiro 2.16.2 claude-sonnet-5
         """
         rename_config = config["rename"]
-        name_to_eqtype = {name: eq_type for eq_type, name in EqType.str_mapping().items()}
+        name_to_eqtype = {
+            name: eq_type for eq_type, name in EqType.str_mapping().items()
+        }
 
         def _to_eqtype(value):
             name = value.split(".", 1)[1] if value.startswith("EqType.") else value
