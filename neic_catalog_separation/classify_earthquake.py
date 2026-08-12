@@ -20,7 +20,6 @@ def classify(
     tolerance: float,
     crust_tolerance: float,
     nshm: bool,
-    int_cutoff: bool,
 ) -> dict:
     """Determine probability that an event occurred in the upper plate (crustal), lower plate (intraslab), or along the subduction interface
     Args:
@@ -32,8 +31,6 @@ def classify(
         nshm (boolean): whether or not the input catalog is a USGS NSHM catalog (if True, then events outside of the slab2 regions will be classified as outer-rise instead of not being calssfied)
         config (dict): name of config file.
         tolerance (float): Distance (km) from interface at which probability is 0.
-        int_cutoff (boolean): Whether to impose a depth (km) in which only crustal and interface probabilities are determined (i.e., below this depth the intraslab classification calculations are included).
-        crust_tolerance (float): Distance (km) below Moho at which probability is 0.
     Output:
         Dictionary with classification values.
     """
@@ -183,10 +180,7 @@ def classify(
                 p2=config["p_interface_slab"]["p2"],
             )
         else:
-            if int_cutoff:
-                x2 = config["int_cutoff"]
-            else:
-                x2 = deep_slab_eq + tolerance
+            x2 = deep_slab_eq + tolerance
             p_tolerance = funcs.get_probability(
                 x=eq_depth,
                 x1=deep_slab_eq,
@@ -196,10 +190,7 @@ def classify(
             )
 
         # Calculate probability that event occurred between the seismogenic zone and maximum seismogenic zone (deep_limit)
-        if int_cutoff:
-            x2 = config["int_cutoff"] + tolerance
-        else:
-            x2 = sz_deep + tolerance
+        x2 = sz_deep + tolerance
         p_interface_sz = funcs.get_probability(
             x=eq_depth,
             x1=sz_deep,
@@ -251,48 +242,24 @@ def classify(
         p_crustal = (
             (1 - p_interface) * p_crustal_moho * p_crustal_moho_slab * p_crustal_slab
         )
-        # if user specifies the int_cutoff flag and earthquake is deeper than int_cutoff then determine intraslab probability, else intraslab probability is 0.0
-        if int_cutoff:
-            if eq_depth > config["int_cutoff"]:
-                # Intraslab: Depth relative to interface
-                p_intraslab_interface = funcs.get_probability(
-                    x=eq_depth,
-                    x1=shallow_slab_eq,
-                    x2=deep_slab_eq + tolerance,
-                    p1=config["p_intraslab_interface"]["p1"],
-                    p2=config["p_intraslab_interface"]["p2"],
-                )
+        # Intraslab: Depth relative to interface
+        p_intraslab_interface = funcs.get_probability(
+            x=eq_depth,
+            x1=shallow_slab_eq,
+            x2=deep_slab_eq + tolerance,
+            p1=config["p_intraslab_interface"]["p1"],
+            p2=config["p_intraslab_interface"]["p2"],
+        )
 
-                # Intraslab: Depth relative to interface + slab thickness
-                p_intraslab_slab = funcs.get_probability(
-                    x=eq_depth,
-                    x1=deep_slab_eq,
-                    x2=deep_slab_eq + slab_thickness_eq,
-                    p1=config["p_intraslab_slab"]["p1"],
-                    p2=config["p_intraslab_slab"]["p2"],
-                )
-                p_intraslab = p_intraslab_interface * p_intraslab_slab
-            else:
-                p_intraslab = 0.0
-        else:
-            # Intraslab: Depth relative to interface
-            p_intraslab_interface = funcs.get_probability(
-                x=eq_depth,
-                x1=shallow_slab_eq,
-                x2=deep_slab_eq + tolerance,
-                p1=config["p_intraslab_interface"]["p1"],
-                p2=config["p_intraslab_interface"]["p2"],
-            )
-
-            # Intraslab: Depth relative to interface + slab thickness
-            p_intraslab_slab = funcs.get_probability(
-                x=eq_depth,
-                x1=deep_slab_eq,
-                x2=deep_slab_eq + slab_thickness_eq,
-                p1=config["p_intraslab_slab"]["p1"],
-                p2=config["p_intraslab_slab"]["p2"],
-            )
-            p_intraslab = p_intraslab_interface * p_intraslab_slab
+        # Intraslab: Depth relative to interface + slab thickness
+        p_intraslab_slab = funcs.get_probability(
+            x=eq_depth,
+            x1=deep_slab_eq,
+            x2=deep_slab_eq + slab_thickness_eq,
+            p1=config["p_intraslab_slab"]["p1"],
+            p2=config["p_intraslab_slab"]["p2"],
+        )
+        p_intraslab = p_intraslab_interface * p_intraslab_slab
 
         p_sum = p_interface + p_crustal + p_intraslab + p_outerrise
         if p_sum > 1.0:  # overlapping regions

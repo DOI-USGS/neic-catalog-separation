@@ -22,7 +22,6 @@ def classify_catalog(
     crust_tolerance: float = 15.0,
     num_processes: int = 1,
     nshm: bool = False,
-    int_cutoff: bool = False,
 ) -> None:
     """Reads in files and sets up arguments to the function classify_earthquake,
     which runs in parallel and determines probability that an event occurred in
@@ -60,7 +59,6 @@ def classify_catalog(
                 nshm=nshm,
                 config=config,
                 tolerance=tolerance,
-                int_cutoff=int_cutoff,
                 crust_tolerance=crust_tolerance,
             )
             results.append(result)
@@ -85,7 +83,6 @@ def classify_catalog(
                 nshm,
                 config,
                 tolerance,
-                int_cutoff,
                 crust_tolerance,
             )
             future.add_done_callback(_update_progress_monitor)
@@ -169,12 +166,6 @@ def cli():
         help="Maximum distance (km) used as a tolerance or buffer for determining the maximum deep seismogenic zone depth cutoff and zone around the slab interface in which earthquakes are considered on the interface.",
     )
     argparser.add_argument(
-        "--int-cutoff",
-        action="store_true",
-        dest="int_cutoff",
-        help="Impose a maximum depth (km) that favors an interface classification such that intraslab calculations are not included above this depth.",
-    )
-    argparser.add_argument(
         "--crust-tolerance",
         default=15.0,
         type=float,
@@ -209,5 +200,4 @@ def cli():
         crust_tolerance=args.crust_tolerance,
         num_processes=args.num_processes,
         nshm=args.nshm,
-        int_cutoff=args.int_cutoff,
     )

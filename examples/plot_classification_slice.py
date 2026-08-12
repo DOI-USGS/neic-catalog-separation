@@ -235,7 +235,6 @@ class PlotSlice:
             num_processes=n_processes,
             tolerance=15.0,
             nshm=True,
-            int_cutoff=False,
         )
 
     def plot(self, filename: pathlib.Path, backend: str = "plotly"):

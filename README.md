@@ -42,7 +42,7 @@ You are encouraged to update values to best reflect the subduction zone(s) for y
 The parameters can be updated in [config/subduction.yml](neic_catalog_separation/config/subduction.yml).
 
 ```bash
-usage: classify_catalog [-h] [--slab2-regions SLAB2_REGIONS] [--catalog CATALOG_FILENAME] [--output OUTPUT] [--config CONFIG_FILE] [--nshm] [--tolerance TOLERANCE] [--int-cutoff] [--num-processes NUM_PROCESSES]
+usage: classify_catalog [-h] [--slab2-regions SLAB2_REGIONS] [--catalog CATALOG_FILENAME] [--output OUTPUT] [--config CONFIG_FILE] [--nshm] [--tolerance TOLERANCE] [--num-processes NUM_PROCESSES]
 
     Classify an Earthquake Catalog within a Slab2 Region. Use the 3 letter abbreviations below for the Slab2 region(s) the eartqhuake catalog covers.
 
@@ -93,8 +93,6 @@ options:
   --num-processes NUM_PROCESSES
                         Number of processes to use in classification.
   --nshm                Classify earthquakes outside of the specified Slab2 region as outer-rise.
-  --int-cutoff
-                      Impose a maximum depth (km) that favors an interface classification such that intraslab calculations are not included above this depth. By default, this flag is not included. If user includes this flag the default value is 62.0 km. This can be changed in the subduction.yml config file.
 ```
 
 ### Examples
