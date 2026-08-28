@@ -8,7 +8,7 @@ Note: the version of the code associated with the USGS Puerto Rico-U.S. Virgin I
 
 # Installation and Dependencies
 
-This software uses Python version 3.9 or later.
+This software uses Python version 3.10 or later.
 The package can be installed using [Poetry](https://python-poetry.org/)
 
 ```bash
@@ -130,7 +130,7 @@ plot_classification_slice.py --help
 For example, the following will create a catalog for a cross-section along -17&deg; from -172&deg; to -178&deg; in the Kermadec Slab2 region to a depth of 450 km, classify that catalog, then plot the result as a HTML file that can be opened in a web browser
 
 ```bash
-plot_classification_slice.py --latitude -17 --max-longitude -172 --min-longitude -178 --max-depth 450 --region ker --create-catalog --classify --plot
+plot_classification_slice.py --latitude -17 --max-longitude -172 --min-longitude -178 --max-depth 450 --regions ker --create-catalog --classify --plot
 ```
 
 ## Helpful utilities
