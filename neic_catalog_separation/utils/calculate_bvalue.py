@@ -42,7 +42,7 @@ def calculate_bvalue(
     # print b-value and related values to screen
     print(f"b-value: {stats['b_value']}")
     print(f"a-value: {stats['a_value']}")
-    print(f"Computed Mc: {stats['mag_complete']}")
+    print(f"Computed Mc: {stats['mc']}")
     print(f"Residual: {stats['residual']}")
     print(f"Goodness-of-fit: {stats['gof']}")
     print(f"Standard Deviation: {stats['std_dev']}")
