@@ -175,7 +175,7 @@ def classify(
             p_tolerance = funcs.get_probability(
                 x=eq_depth,
                 x1=shallow_slab_eq - tolerance,
-                x2=slab_depth_eq,
+                x2=shallow_slab_eq,
                 p1=config["p_interface_slab"]["p1"],
                 p2=config["p_interface_slab"]["p2"],
             )
