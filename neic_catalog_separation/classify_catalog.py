@@ -75,15 +75,15 @@ def classify_catalog(
         for earthquake in catalog.iter_rows(named=True):
             future = executor.submit(
                 classify_earthquake.classify,
-                earthquake,
-                slab1,
-                slab2,
-                moho_depth,
-                seismogenic_depth,
-                nshm,
-                config,
-                tolerance,
-                crust_tolerance,
+                earthquake=earthquake,
+                slab1=slab1,
+                slab2=slab2,
+                moho_depth=moho_depth,
+                seismogenic_depth=seismogenic_depth,
+                nshm=nshm,
+                config=config,
+                tolerance=tolerance,
+                crust_tolerance=crust_tolerance,
             )
             future.add_done_callback(_update_progress_monitor)
             futures.append(future)
