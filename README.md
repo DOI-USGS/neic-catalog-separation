@@ -6,6 +6,21 @@ Please send any inquires to Kirstie Haynie (<khaynie@usgs.gov>).
 
 Note: the version of the code associated with the USGS Puerto Rico-U.S. Virgin Islands National Seismic Hazard Model (see [Haynie et al., 2025, SRL](https://pubs.geoscienceworld.org/ssa/srl/article/97/2A/1191/661894/Subduction-Zone-Earthquake-Catalog-Separation-Tool)) is avaiable at <https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation/-/tree/1.0.0?ref_type=tags>. To cite the code, refer to [How to Cite](#how-to-cite).
 
+## How it works
+
+For each earthquake, the classifier looks up the Slab2 surface (depth, strike, dip, thickness, and depth uncertainty) and the CRUST1.0 Moho depth at the event's location, then computes several independent probabilities using smooth ramp functions defined by the parameters in the config file:
+
+- Probability of being on the interface, based on depth relative to the slab surface (+/- tolerance), depth relative to the seismogenic zone, and the Kagan angle between the earthquake's focal mechanism and the slab's strike/dip/rake (a measure of how closely the fault plane orientation matches the subduction interface).
+- Probability of being crustal, based on depth relative to the Moho and relative to the slab surface.
+- Probability of being intraslab, based on depth relative to the interface and relative to the slab thickness.
+- Probability of being outer-rise (only computed for events outside the slab region when `--nshm` is used), based on depth relative to the slab thickness near the trench.
+
+These probabilities are normalized to sum to 1 (with any remainder assigned to mantle), and the earthquake is assigned to whichever category has the highest probability. A tie between categories results in an `unknown` classification. A quality grade (A-D) is also assigned to each classification, reflecting how well-supported the category assignment is.
+
+By default, the code produces "sub-mantle" categories (e.g., `crustal_mantle`) for events near the boundary with the mantle. These can be re-mapped to their primary category (e.g. `crustal`) using the `rename` section of the config file.
+
+Vertical, tilted, or overturned slab regions (Manila, Kermadec, Izu-Bonin, and Solomon Islands) are handled separately using the published Slab2 "sup" grids and a nearest-neighbor lookup, since the standard Slab2 grids do not have valid depth values in these regions.
+
 # Installation and Dependencies
 
 This software uses Python version 3.10 or later.
@@ -44,7 +59,7 @@ You are encouraged to update values to best reflect the subduction zone(s) for y
 The parameters can be updated in [config/subduction.yml](neic_catalog_separation/config/subduction.yml).
 
 ```bash
-usage: classify_catalog [-h] [--slab2-regions SLAB2_REGIONS] [--catalog CATALOG_FILENAME] [--output OUTPUT] [--config CONFIG_FILE] [--nshm] [--tolerance TOLERANCE] [--num-processes NUM_PROCESSES]
+usage: classify_catalog [-h] [--slab2-regions SLAB2_REGIONS] [--catalog CATALOG_FILENAME] [--output OUTPUT] [--config CONFIG_FILE] [--nshm] [--shallow-tolerance SHALLOW_TOLERANCE] [--deep-tolerance DEEP_TOLERANCE] [--num-processes NUM_PROCESSES]
 
     Classify an Earthquake Catalog within a Slab2 Region. Use the 3 letter abbreviations below for the Slab2 region(s) the eartqhuake catalog covers.
 
@@ -88,8 +103,10 @@ options:
                         Path and file name for the input catalog to separate (must be CSV file format).
   --output OUTPUT       Path and file name for the output file.
   --config CONFIG_FILE  Path and file name for the configuration file. If not provided, the default configuration is used.
-  --tolerance TOLERANCE
-                        Maximum distance (km) used as a tolerance or buffer for determining the maximum deep seismogenic zone depth cutoff and zone around the slab interface in which earthquakes are considered on the interface. Default is 15.0 km.
+  --shallow-tolerance SHALLOW_TOLERANCE
+                        Maximum distance (km) used as a tolerance or buffer for the shallow (updip) portion of the zone around the slab interface in which earthquakes are considered on the interface. Default is 15.0 km.
+  --deep-tolerance DEEP_TOLERANCE
+                        Maximum distance (km) used as a tolerance or buffer for determining the maximum deep seismogenic zone depth cutoff and the deep (downdip) portion of the zone around the slab interface in which earthquakes are considered on the interface. Default is 15.0 km.
   --crust-tolerance CRUST_TOLERANCE
                         Maximum distance (km) below the Moho for earthquakes to be considered crustal. Default is 15.0 km.
   --num-processes NUM_PROCESSES
@@ -188,6 +205,20 @@ options:
 ```bash
 classify_calculate_bvalue --catalog=CATALOG_FILENAME --completeness-magnitude=4.5 --bin-size=0.1
 ```
+
+# Project structure
+
+- [`neic_catalog_separation/classify_catalog.py`](neic_catalog_separation/classify_catalog.py) &mdash; `classify_catalog` CLI entry point. Loads the catalog and Slab2/Moho/seismogenic-depth data, then classifies each earthquake (serially or in parallel via `--num-processes`) and writes the results to a CSV.
+- [`neic_catalog_separation/classify_earthquake.py`](neic_catalog_separation/classify_earthquake.py) &mdash; Core per-earthquake classification algorithm described in [How it works](#how-it-works).
+- [`neic_catalog_separation/funcs.py`](neic_catalog_separation/funcs.py) &mdash; Supporting math/geometry functions: probability ramp functions, Kagan angle calculation, category selection, and quality grading.
+- [`neic_catalog_separation/data_sources.py`](neic_catalog_separation/data_sources.py) &mdash; Loaders for the Slab2 grids (depth, strike, dip, thickness, uncertainty, including nearest-neighbor lookups for overturned slabs), CRUST1.0 Moho depth grids, and per-region seismogenic depth/rake values.
+- [`neic_catalog_separation/eqtype.py`](neic_catalog_separation/eqtype.py) &mdash; `EqType` enum for the classification categories and the category rename mechanism.
+- [`neic_catalog_separation/io.py`](neic_catalog_separation/io.py) &mdash; Configuration file reader.
+- [`neic_catalog_separation/config/subduction.yml`](neic_catalog_separation/config/subduction.yml) &mdash; Tunable heuristic parameters used by the ramp functions, plus the optional category `rename` mappings.
+- [`neic_catalog_separation/data/`](neic_catalog_separation/data) &mdash; Bundled Slab2 and CRUST1.0 grid data used by the data source loaders.
+- [`neic_catalog_separation/utils/`](neic_catalog_separation/utils) &mdash; The `classify_fetch_mt`, `classify_separate_csv`, and `classify_calculate_bvalue` utilities described above.
+- [`examples/plot_classification_slice.py`](examples/plot_classification_slice.py) &mdash; Generates, classifies, and plots a synthetic earthquake catalog along a user-specified cross-section, useful for visually checking classification boundaries for a given slab region.
+- `tests/` &mdash; Pytest coverage for the probability/Kagan-angle math, Slab2/Moho/seismogenic-depth data lookups, and an end-to-end `classify_catalog` smoke test.
 
 # How to cite
 
