@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 """Application to show earthquake classification based on position.
 
+Sample slices:
+
+1. Kermadec
+
+`./plot_classification_slice.py --latitude=-20.0 --min-longitude=-179.95 --max-longitude=-170.0 --max-depth=800.0 --regions=ker --create-catalog --classify --plot --num-processes=32 --filename=kermadec_slice.html`
+
+
 # :TODO: Add Moho depth on plot.
 # :TODO: Add slab interface on plot.
 # :TODO: Add Moho 'buffer' on plot.
@@ -14,6 +21,19 @@ import pathlib
 import numpy
 import polars
 
+
+COLORMAP = {
+    "crustal": "orange",
+    "subduction_interface": "orchid",
+    "subduction_intraslab": "darkgray",
+    "subduction_outerrise": "red",
+    "mantle": "wheat",
+    "crustal_mantle": "salmon",
+    "subduction_interface_mantle": "purple",
+    "subduction_intraslab_mantle": "lightslategray",
+    "subduction_outerrise_mantle": "darkred",
+    "unknown": "pink",
+}
 
 def cli():
     import argparse
@@ -302,18 +322,7 @@ class PlotSlice:
                 "p_outerrise": data.p_outerrise,
                 "p_mantle": data.p_mantle,
             },
-            color_discrete_map={
-                "crustal": "orange",
-                "subduction_interface": "orchid",
-                "subduction_intraslab": "darkgray",
-                "subduction_outerrise": "red",
-                "mantle": "wheat",
-                "crustal_mantle": "salmon",
-                "subduction_interface_mantle": "purple",
-                "subduction_intraslab_mantle": "lightslategray",
-                "subduction_outerrise_mantle": "darkred",
-                "unknown": "pink",
-            },
+            color_discrete_map=COLORMAP,
             title="Vertical cross section",
             labels={
                 "x": "Longitude",
