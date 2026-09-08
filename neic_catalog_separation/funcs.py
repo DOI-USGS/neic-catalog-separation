@@ -263,6 +263,7 @@ def get_category(p_interface, p_intraslab, p_crustal, p_mantle, p_outerrise):
         EqType.SUBDUCTION_INTERFACE,
         EqType.SUBDUCTION_INTRASLAB,
         EqType.SUBDUCTION_OUTERRISE,
+        EqType.UNKNOWN,
     )
     index = np.argmax([p_crustal, p_interface, p_intraslab, p_outerrise])
     category = categories[index]
@@ -270,6 +271,8 @@ def get_category(p_interface, p_intraslab, p_crustal, p_mantle, p_outerrise):
         category = EqType.MANTLE
     elif p_mantle > 50.0:
         category = EqType.mantle_mapping()[category]
+    if p_interface == p_intraslab == p_crustal == p_mantle == p_outerrise:
+        category = EqType.UNKNOWN
     return category
 
 

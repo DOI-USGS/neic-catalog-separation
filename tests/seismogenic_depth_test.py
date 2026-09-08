@@ -2,10 +2,12 @@ import pytest
 
 from neic_catalog_separation import data_sources
 
+
 @pytest.fixture
 def seismogenic_depth():
     """Create seismogenic depth test subject."""
     import pathlib
+
     data_dir = pathlib.Path(data_sources.__file__).parent.resolve() / "data" / "Slab2"
     return data_sources.seismogenic_depth(data_dir)
 

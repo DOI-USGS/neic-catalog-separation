@@ -3,7 +3,7 @@ import pathlib
 import numpy as np
 import pytest
 
-from neic_catalog_separation import (funcs, io)
+from neic_catalog_separation import funcs, io
 from neic_catalog_separation.eqtype import EqType
 
 
@@ -14,12 +14,10 @@ def config():
 
 
 class TestDetermineQuality:
-
     def test_quality_a(self):
         "Test quality determination for A quality (qual)"
         expected_quality = "A"
-        quality = funcs.determine_quality(
-            EqType.CRUSTAL, 100, 0, 0, 113.342, 80)
+        quality = funcs.determine_quality(EqType.CRUSTAL, 100, 0, 0, 113.342, 80)
 
         assert expected_quality == quality
 
@@ -27,7 +25,8 @@ class TestDetermineQuality:
         "Test quality determination for B quality (qual)"
         expected_quality = "B"
         quality = funcs.determine_quality(
-            EqType.SUBDUCTION_INTRASLAB, 0, 100, 0, np.nan, 80)
+            EqType.SUBDUCTION_INTRASLAB, 0, 100, 0, np.nan, 80
+        )
 
         assert expected_quality == quality
 
@@ -42,7 +41,8 @@ class TestDetermineQuality:
         "Test quality determination for D quality (qual)"
         expected_quality = "D"
         quality = funcs.determine_quality(
-            EqType.SUBDUCTION_INTERFACE, 0, 46.667, 53.333, np.nan, 0)
+            EqType.SUBDUCTION_INTERFACE, 0, 46.667, 53.333, np.nan, 0
+        )
 
         assert expected_quality == quality
 
@@ -50,13 +50,13 @@ class TestDetermineQuality:
         "Test quality determination for equal (eq) probabilty"
         expected_quality = "D"
         quality = funcs.determine_quality(
-            EqType.SUBDUCTION_INTERFACE, 0, 50, 50, np.nan, 0)
+            EqType.SUBDUCTION_INTERFACE, 0, 50, 50, np.nan, 0
+        )
 
         assert expected_quality == quality
 
 
 class TestGetKaganAngle:
-
     def test_angle(self):
         """Test Kagan angle functionality"""
         desired_kagan = 56.64
@@ -74,7 +74,6 @@ class TestGetKaganAngle:
 
 
 class TestGetProbability:
-
     def test_p1(self, config):
         """Test ramp function calculation that returns probability of p1"""
 

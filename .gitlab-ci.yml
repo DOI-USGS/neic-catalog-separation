@@ -1,4 +1,4 @@
-image: ${CI_REGISTRY}/devops/images/usgs/python:3.9
+image: ${CI_REGISTRY}/devops/images/usgs/python:3.12
 
 stages:
   - build

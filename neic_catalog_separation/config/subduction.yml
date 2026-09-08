@@ -1,10 +1,10 @@
 # Degree of membership parameters
 
 # Maximum distance from slab to consider as outer rise
-outerrise_maxdist: 250.0
+outerrise_maxdist: 600.0
 
 # Max depth of slab at closest point to detect outer rise region
-outerrise_slab_maxdepth: 30.0
+outerrise_slab_maxdepth: 100.0
 
 p_outerrise_slab:
   p1: 1.0
@@ -63,3 +63,11 @@ p_intraslab_interface:
 p_intraslab_slab:
   p1: 1.0
   p2: 0.0
+
+# To re-name/re-map any categories, uncomment the renaming dictionary below. This can be edited as desired.
+# rename:
+#   crustal_mantle: EqType.CRUSTAL
+#   mantle: EqType.UNKNOWN
+#   subduction_interface_mantle: EqType.SUBDUCTION_INTERFACE
+#   subduction_intraslab_mantle: EqType.SUBDUCTION_INTRASLAB
+#   subduction_outerrise_mantle: EqType.SUBDUCTION_OUTERRISE

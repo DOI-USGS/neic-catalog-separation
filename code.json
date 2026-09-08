@@ -30,12 +30,11 @@
       "CatalogSeparation",
       "Earthquak Catalog",
       "Subduction",
-      "NEIC"
+      "NEIC",
+      "usg-artificial-intelligence"
     ],
 
-    "languages": [
-      "Python"
-    ],
+    "languages": ["Python"],
 
     "contact": {
       "name": "Kirstie L Haynie",
@@ -43,7 +42,7 @@
     },
 
     "date": {
-      "metadataLastUpdated": "2024-09-23"
+      "metadataLastUpdated": "2026-08-12"
     }
   }
 ]
