@@ -18,7 +18,8 @@ def classify_catalog(
     slab_region2: str,
     catalog_filename: str,
     config_filename: str,
-    tolerance: float = 15.0,
+    shallow_tolerance: float = 15.0,
+    deep_tolerance: float = 15.0,
     crust_tolerance: float = 15.0,
     num_processes: int = 1,
     nshm: bool = False,
@@ -58,7 +59,8 @@ def classify_catalog(
                 seismogenic_depth=seismogenic_depth,
                 nshm=nshm,
                 config=config,
-                tolerance=tolerance,
+                shallow_tolerance=shallow_tolerance,
+                deep_tolerance=deep_tolerance,
                 crust_tolerance=crust_tolerance,
             )
             results.append(result)
@@ -82,7 +84,8 @@ def classify_catalog(
                 seismogenic_depth=seismogenic_depth,
                 nshm=nshm,
                 config=config,
-                tolerance=tolerance,
+                shallow_tolerance=shallow_tolerance,
+                deep_tolerance=deep_tolerance,
                 crust_tolerance=crust_tolerance,
             )
             future.add_done_callback(_update_progress_monitor)
@@ -159,11 +162,18 @@ def cli():
         help="Classify earthquakes outside of the specified Slab2 region.",
     )
     argparser.add_argument(
-        "--tolerance",
+        "--shallow-tolerance",
         default=15.0,
         type=float,
-        dest="tolerance",
-        help="Maximum distance (km) used as a tolerance or buffer for determining the maximum deep seismogenic zone depth cutoff and zone around the slab interface in which earthquakes are considered on the interface.",
+        dest="shallow_tolerance",
+        help="Maximum distance (km) used as a tolerance or buffer for the shallow portion of the zone around the slab interface (i.e., above the interface) in which earthquakes are considered on the interface.",
+    )
+    argparser.add_argument(
+        "--deep-tolerance",
+        default=15.0,
+        type=float,
+        dest="deep_tolerance",
+        help="Maximum distance (km) used as a tolerance or buffer for determining the maximum deep seismogenic zone depth cutoff and the deep portion of the zone around the slab interface (i.e., below the interface) in which earthquakes are considered on the interface.",
     )
     argparser.add_argument(
         "--crust-tolerance",
@@ -196,7 +206,8 @@ def cli():
         slab_region2=slab_region2,
         catalog_filename=args.catalog_filename,
         config_filename=args.config_filename,
-        tolerance=args.tolerance,
+        shallow_tolerance=args.shallow_tolerance,
+        deep_tolerance=args.deep_tolerance,
         crust_tolerance=args.crust_tolerance,
         num_processes=args.num_processes,
         nshm=args.nshm,

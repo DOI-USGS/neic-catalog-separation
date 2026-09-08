@@ -17,7 +17,8 @@ def classify(
     moho_depth: float,
     seismogenic_depth: float,
     config: dict,
-    tolerance: float,
+    shallow_tolerance: float,
+    deep_tolerance: float,
     crust_tolerance: float,
     nshm: bool,
 ) -> dict:
@@ -30,7 +31,8 @@ def classify(
         seismogenic_depth: Seismogenic depth of interface (km).
         nshm (boolean): whether or not the input catalog is a USGS NSHM catalog (if True, then events outside of the slab2 regions will be classified as outer-rise instead of not being calssfied)
         config (dict): name of config file.
-        tolerance (float): Distance (km) from interface at which probability is 0.
+        shallow_tolerance (float): Shallow buffer distance (km) above the interface at which interface probability is 0.
+        deep_tolerance (float): Deep buffer distance (km) below the interface at which interface probability is 0. Also used for the deep seismogenic zone depth cutoff.
     Output:
         Dictionary with classification values.
     """
@@ -134,7 +136,7 @@ def classify(
                 p_outerrise = funcs.get_probability(
                     x=eq_depth,
                     x1=slab_thickness,
-                    x2=slab_thickness + tolerance,
+                    x2=slab_thickness + shallow_tolerance,
                     p1=config["p_outerrise_slab"]["p1"],
                     p2=config["p_outerrise_slab"]["p2"],
                 )
@@ -174,13 +176,13 @@ def classify(
         if eq_depth <= shallow_slab_eq:
             p_tolerance = funcs.get_probability(
                 x=eq_depth,
-                x1=shallow_slab_eq - tolerance,
+                x1=shallow_slab_eq - shallow_tolerance,
                 x2=shallow_slab_eq,
                 p1=config["p_interface_slab"]["p1"],
                 p2=config["p_interface_slab"]["p2"],
             )
         else:
-            x2 = deep_slab_eq + tolerance
+            x2 = deep_slab_eq + deep_tolerance
             p_tolerance = funcs.get_probability(
                 x=eq_depth,
                 x1=deep_slab_eq,
@@ -190,7 +192,7 @@ def classify(
             )
 
         # Calculate probability that event occurred between the seismogenic zone and maximum seismogenic zone (deep_limit)
-        x2 = sz_deep + tolerance
+        x2 = sz_deep + deep_tolerance
         p_interface_sz = funcs.get_probability(
             x=eq_depth,
             x1=sz_deep,
@@ -246,7 +248,7 @@ def classify(
         p_intraslab_interface = funcs.get_probability(
             x=eq_depth,
             x1=shallow_slab_eq,
-            x2=deep_slab_eq + tolerance,
+            x2=deep_slab_eq + deep_tolerance,
             p1=config["p_intraslab_interface"]["p1"],
             p2=config["p_intraslab_interface"]["p2"],
         )

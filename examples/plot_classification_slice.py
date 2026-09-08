@@ -253,7 +253,8 @@ class PlotSlice:
             / "config"
             / "subduction.yml",
             num_processes=n_processes,
-            tolerance=15.0,
+            shallow_tolerance=15.0,
+            deep_tolerance=60.0,
             nshm=True,
         )
 
