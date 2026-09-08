@@ -150,6 +150,14 @@ For example, the following will create a catalog for a cross-section along -17&d
 plot_classification_slice.py --latitude -17 --max-longitude -172 --min-longitude -178 --max-depth 450 --regions ker --create-catalog --classify --plot
 ```
 
+A second example script, [`plot_classification_3d.py`](examples/plot_classification_3d.py), renders the classified output of `classify_catalog` (e.g., the columns `longitude`, `latitude`, `depth`, and `eq_category`) as an interactive 3D scatter plot in HTML format. It can optionally overlay the Slab2 depth surface for a region (`--slab2-region`) in the 3D scene, add a 2D map panel with coastlines and country borders (`--coastlines`), and/or add a focal mechanism ("beachball") map panel (`--focal-mechanisms`) plotting each event's nodal-plane solution from the `S1`/`D1`/`R1` columns.
+
+```bash
+plot_classification_3d.py --catalog path/to/separated/csv --filename output_filname.html --slab2-region SLAB_REGION --coastlines --focal-mechanisms
+```
+
+Run `plot_classification_3d.py --help` for the full list of options.
+
 ## Helpful utilities
 
 ### `clasify_fetch_mt`
@@ -218,6 +226,8 @@ classify_calculate_bvalue --catalog=CATALOG_FILENAME --completeness-magnitude=4.
 - [`neic_catalog_separation/data/`](neic_catalog_separation/data) &mdash; Bundled Slab2 and CRUST1.0 grid data used by the data source loaders.
 - [`neic_catalog_separation/utils/`](neic_catalog_separation/utils) &mdash; The `classify_fetch_mt`, `classify_separate_csv`, and `classify_calculate_bvalue` utilities described above.
 - [`examples/plot_classification_slice.py`](examples/plot_classification_slice.py) &mdash; Generates, classifies, and plots a synthetic earthquake catalog along a user-specified cross-section, useful for visually checking classification boundaries for a given slab region.
+- [`examples/plot_classification_3d.py`](examples/plot_classification_3d.py) &mdash; Renders a classified catalog's `longitude`, `latitude`, and `depth` as an interactive 3D scatter plot, colored by `eq_category`.
+- [`examples/focal_mechanism.py`](examples/focal_mechanism.py) &mdash; Standalone, dependency-free (matplotlib only) rendering of focal mechanism ("beachball") diagrams from strike/dip/rake, used by `plot_classification_3d.py`'s `--focal-mechanisms` option.
 - `tests/` &mdash; Pytest coverage for the probability/Kagan-angle math, Slab2/Moho/seismogenic-depth data lookups, and an end-to-end `classify_catalog` smoke test.
 
 # How to cite
