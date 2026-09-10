@@ -1,4 +1,5 @@
 # stdlib imports
+import os
 import pathlib
 from concurrent.futures import ProcessPoolExecutor
 
@@ -11,6 +12,42 @@ import tqdm
 # local imports
 from . import classify_earthquake, data_sources, io
 
+# ---------------------------------------------------------------------------
+# Worker-side global variables. Populated once per worker process by _init_worker(),
+# so the (large) Slab2 and Crust1.0 models are pickled once per worker rather
+# than once per earthquake.
+# ---------------------------------------------------------------------------
+_MODELS = {}
+
+
+def _init_worker(slab1, slab2, moho_depth, seismogenic_depth, config, nshm):
+    """Pool initializer: runs once per worker process."""
+    _MODELS.update(
+        slab1=slab1,
+        slab2=slab2,
+        moho_depth=moho_depth,
+        seismogenic_depth=seismogenic_depth,
+        config=config,
+        nshm=nshm,
+    )
+
+
+def _classify_chunk(earthquakes: list) -> list:
+    """Classify a batch of earthquakes inside a worker process.
+
+    Only the earthquake dicts cross the process boundary; the models are
+    already resident in the worker via _MODELS.
+    """
+    return [
+        classify_earthquake.classify(earthquake=earthquake, **_MODELS)
+        for earthquake in earthquakes
+    ]
+
+
+def _chunked(sequence: list, chunk_size: int):
+    for start in range(0, len(sequence), chunk_size):
+        yield sequence[start : start + chunk_size]
+
 
 def classify_catalog(
     output_filename: str,
@@ -18,15 +55,14 @@ def classify_catalog(
     slab_region2: str,
     catalog_filename: str,
     config_filename: str,
-    shallow_tolerance: float = 15.0,
-    deep_tolerance: float = 15.0,
-    crust_tolerance: float = 15.0,
-    num_processes: int = 1,
     nshm: bool = False,
+    num_processes: int = 1,
+    chunk_size: int = 0,
 ) -> None:
     """Reads in files and sets up arguments to the function classify_earthquake,
     which runs in parallel and determines probability that an event occurred in
-    the upper plate (crustal), lower plate (intraslab), or along the subduction interface.
+    the upper plate (crustal), lower plate (intraslab), or along the subduction
+    interface.
     """
     top_dir = pathlib.Path(__file__).parent.resolve()
     data_dir = top_dir / "data"
@@ -47,52 +83,38 @@ def classify_catalog(
         catalog_filename, null_values=["NaN", "nan"]
     ).with_columns(polars.all().fill_null(np.nan))
 
-    progress_monitor = tqdm.tqdm(total=len(catalog))
+    earthquakes = list(catalog.iter_rows(named=True))
+
     if num_processes == 1:
+        _init_worker(slab1, slab2, moho_depth, seismogenic_depth, config, nshm)
         results = []
-        for earthquake in catalog.iter_rows(named=True):
-            result = classify_earthquake.classify(
-                earthquake=earthquake,
-                slab1=slab1,
-                slab2=slab2,
-                moho_depth=moho_depth,
-                seismogenic_depth=seismogenic_depth,
-                nshm=nshm,
-                config=config,
-                shallow_tolerance=shallow_tolerance,
-                deep_tolerance=deep_tolerance,
-                crust_tolerance=crust_tolerance,
-            )
-            results.append(result)
-            progress_monitor.update(1)
-        classification = polars.from_dicts(results)
+        with tqdm.tqdm(total=len(earthquakes)) as progress_monitor:
+            for earthquake in earthquakes:
+                results.append(
+                    classify_earthquake.classify(earthquake=earthquake, **_MODELS)
+                )
+                progress_monitor.update(1)
     else:
+        # Aim for a few chunks per worker: enough to balance load, few enough
+        # that per-task overhead stays negligible.
+        if not chunk_size:
+            chunk_size = max(1, len(earthquakes) // (num_processes * 8))
+        chunks = list(_chunked(earthquakes, chunk_size))
 
-        def _update_progress_monitor(future):
-            progress_monitor.update(1)
+        results = []
+        with ProcessPoolExecutor(
+            max_workers=num_processes,
+            initializer=_init_worker,
+            initargs=(slab1, slab2, moho_depth, seismogenic_depth, config, nshm),
+        ) as executor:
+            with tqdm.tqdm(total=len(earthquakes)) as progress_monitor:
+                # map() preserves input order and streams results back as
+                # workers finish, so memory stays bounded.
+                for chunk_results in executor.map(_classify_chunk, chunks):
+                    results.extend(chunk_results)
+                    progress_monitor.update(len(chunk_results))
 
-        futures = []
-        executor = ProcessPoolExecutor(max_workers=num_processes)
-
-        for earthquake in catalog.iter_rows(named=True):
-            future = executor.submit(
-                classify_earthquake.classify,
-                earthquake=earthquake,
-                slab1=slab1,
-                slab2=slab2,
-                moho_depth=moho_depth,
-                seismogenic_depth=seismogenic_depth,
-                nshm=nshm,
-                config=config,
-                shallow_tolerance=shallow_tolerance,
-                deep_tolerance=deep_tolerance,
-                crust_tolerance=crust_tolerance,
-            )
-            future.add_done_callback(_update_progress_monitor)
-            futures.append(future)
-        classification = polars.from_dicts([future.result() for future in futures])
-        executor.shutdown()
-    progress_monitor.close()
+    classification = polars.from_dicts(results)
     classification.write_csv(output_filename)
 
 
@@ -162,27 +184,6 @@ def cli():
         help="Classify earthquakes outside of the specified Slab2 region.",
     )
     argparser.add_argument(
-        "--shallow-tolerance",
-        default=15.0,
-        type=float,
-        dest="shallow_tolerance",
-        help="Maximum distance (km) used as a tolerance or buffer for the shallow portion of the zone around the slab interface (i.e., above the interface) in which earthquakes are considered on the interface.",
-    )
-    argparser.add_argument(
-        "--deep-tolerance",
-        default=15.0,
-        type=float,
-        dest="deep_tolerance",
-        help="Maximum distance (km) used as a tolerance or buffer for determining the maximum deep seismogenic zone depth cutoff and the deep portion of the zone around the slab interface (i.e., below the interface) in which earthquakes are considered on the interface.",
-    )
-    argparser.add_argument(
-        "--crust-tolerance",
-        default=15.0,
-        type=float,
-        dest="crust_tolerance",
-        help="Maximum distance below Moho for earthquakes to be considered crustal.",
-    )
-    argparser.add_argument(
         "--num-processes",
         default=1,
         type=int,
@@ -206,9 +207,6 @@ def cli():
         slab_region2=slab_region2,
         catalog_filename=args.catalog_filename,
         config_filename=args.config_filename,
-        shallow_tolerance=args.shallow_tolerance,
-        deep_tolerance=args.deep_tolerance,
-        crust_tolerance=args.crust_tolerance,
         num_processes=args.num_processes,
         nshm=args.nshm,
     )
