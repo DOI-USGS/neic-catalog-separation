@@ -1,14 +1,15 @@
 # Degree of membership parameters
+include_uncertainty: True
 
-# Maximum distance from slab to consider as outer rise
-outerrise_maxdist: 600.0
+# Crustal membership parameters.
+# x1: Depth above Moho (negative) where membership is 1.0.
+# x2: Depth below Moho (positive) where membership is 0.0.
+p_crustal:
+  x1: 0.0
+  x2: 20.0
 
-# Max depth of slab at closest point to detect outer rise region
-outerrise_slab_maxdepth: 100.0
-
-p_outerrise_slab:
-  p1: 1.0
-  p2: 0.0
+# Interface membership parameters.
+# Local uncertainty is included if include_uncertainty is True.
 
 # Calculate interface degree of membership given Kagan's angle
 p_interface_kagan:
@@ -16,6 +17,55 @@ p_interface_kagan:
   p1: 1.0
   x2: 53.0
   p2: 0.25
+
+# x1: Depth above slab interface (negative) where membership is 0.0.
+# x2: Depth below slab interface (positive) where membership is 1.0.
+p_interface_shallow:
+  x1: -20.0
+  x2: 0.0
+
+# x1: Depth above slab interface (negative) where membership is 1.0.
+# x2: Depth below slab interface (positive) where membership is 0.0.
+p_interface_deep:
+  x1: 0.0
+  x2: 30.0
+
+# x1: Depth above slab interface (negative) where membership is 1.0.
+# x2: Depth below slab interface (positive) where membership is 0.0.
+p_interface_seismogenic:
+  x1: 0.0
+  x2: 20.0
+
+# Intraslab membership parameters.
+# Local uncertainty is included if include_uncertainty is True.
+
+# x1: Depth above slab interface (negative) where membership is 0.0.
+# x2: Depth below slab interface (positive) where membership is 1.0.
+p_intraslab_shallow:
+  x1: 0.0
+  x2: 0.0
+
+# x1: Depth above bottom of slab (negative) where membership is 1.0.
+# x2: Depth below bottom of slab (positive) where membership is 0.0.
+p_intraslab_deep:
+  x1: 0.0
+  x2: +50.0
+
+# Outer rise membership parameters.
+
+# Maximum distance from slab to consider as outer rise
+outerrise_maxdist: 600.0
+
+# Max depth of slab at closest point to detect outer rise region
+outerrise_slab_maxdepth: 50.0
+
+# x1: Depth above bottom of slab (negative) where membership is 1.0.
+# x2: Depth below bottom of slab (positive) where membership is 0.0.
+p_outerrise:
+  x1: 0.0
+  x2: 20.0
+
+# Obsolete
 
 # Calculate interface degree of membership given depth relative to slab interface
 p_interface_slab:
@@ -34,9 +84,9 @@ p_interface_fx:
 
 # Calculate crustal degree of membership given depth relative to slab depth
 p_crustal_slab:
-  x1: -20.0
+  #  x1: -20.0
+  #  x2: 20.0
   p1: 1.0
-  x2: 20.0
   p2: 0.0
 
 # Calculate crustal degree of membership given depth relative to Moho depth and slab depth
@@ -66,8 +116,18 @@ p_intraslab_slab:
 
 # To re-name/re-map any categories, uncomment the renaming dictionary below. This can be edited as desired.
 # rename:
+#   crustal_subduction_interface: EqType.CRUSTAL
 #   crustal_mantle: EqType.CRUSTAL
-#   mantle: EqType.UNKNOWN
+#   #mantle: EqType.UNKNOWN
+#   subduction_interface_crustal: EqType.SUBDUCTION_INTERFACE
+#   subduction_interface_intraslab: EqType.SUBDUCTION_INTERFACE
 #   subduction_interface_mantle: EqType.SUBDUCTION_INTERFACE
+
+#   subduction_intraslab_interface: EqType.SUBDUCTION_INTERFACE
 #   subduction_intraslab_mantle: EqType.SUBDUCTION_INTRASLAB
 #   subduction_outerrise_mantle: EqType.SUBDUCTION_OUTERRISE
+
+#   mantle_crustal: EqType.CRUSTAL
+#   mantle_subduction_interface: EqType.SUBDUCTION_INTERFACE
+#   mantle_subduction_intraslab: EqType.SUBDUCTION_INTRASLAB
+#   mantle_subduction_outerrise: EqType.SUBDUCTION_OUTERRISE

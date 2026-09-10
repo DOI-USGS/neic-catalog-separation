@@ -1,20 +1,34 @@
 from enum import Enum
 
-NO_VALUE = 999
+NO_VALUE = 99999
 
 
 class EqType(Enum):
     """Enumerated values for types of earthquakes."""
 
-    CRUSTAL = 0
-    SUBDUCTION_INTERFACE = 10
-    SUBDUCTION_INTRASLAB = 11
-    SUBDUCTION_OUTERRISE = 12
-    MANTLE = 20
-    CRUSTAL_MANTLE = 21
-    SUBDUCTION_INTERFACE_MANTLE = 22
-    SUBDUCTION_INTRASLAB_MANTLE = 23
-    SUBDUCTION_OUTERRISE_MANTLE = 24
+    CRUSTAL = 1
+    SUBDUCTION_INTERFACE = 2
+    SUBDUCTION_INTRASLAB = 3
+    SUBDUCTION_OUTERRISE = 4
+    MANTLE = 5
+
+    CRUSTAL_SUBDUCTION_INTERFACE = 12
+    CRUSTAL_MANTLE = 15
+
+    SUBDUCTION_INTERFACE_CRUSTAL = 21
+    SUBDUCTION_INTERFACE_INTRASLAB = 23
+    SUBDUCTION_INTERFACE_MANTLE = 25
+
+    SUBDUCTION_INTRASLAB_INTERFACE = 32
+    SUBDUCTION_INTRASLAB_MANTLE = 35
+
+    SUBDUCTION_OUTERRISE_MANTLE = 45
+
+    MANTLE_CRUSTAL = 51
+    MANTLE_SUBDUCTION_INTERFACE = 52
+    MANTLE_SUBDUCTION_INTRASLAB = 53
+    MANTLE_SUBDUCTION_OUTERRISE = 54
+
     UNKNOWN = NO_VALUE
 
     @staticmethod
@@ -30,26 +44,26 @@ class EqType(Enum):
             EqType.SUBDUCTION_INTRASLAB: "subduction_intraslab",
             EqType.SUBDUCTION_OUTERRISE: "subduction_outerrise",
             EqType.MANTLE: "mantle",
-            EqType.CRUSTAL_MANTLE: "crustal_mantle",
-            EqType.SUBDUCTION_INTERFACE_MANTLE: "subduction_interface_mantle",
+            EqType.CRUSTAL_SUBDUCTION_INTERFACE: "crustal-subduction_interface",
+            EqType.CRUSTAL_MANTLE: "crustal-mantle",
+            EqType.SUBDUCTION_INTERFACE_CRUSTAL: "subduction_interface-crustal",
+            EqType.SUBDUCTION_INTERFACE_INTRASLAB: "subduction_interface-intraslab",
+            EqType.SUBDUCTION_INTERFACE_MANTLE: "subduction_interface-mantle",
+            EqType.SUBDUCTION_INTRASLAB_INTERFACE: "subduction_intraslab_interface",
             EqType.SUBDUCTION_INTRASLAB_MANTLE: "subduction_intraslab_mantle",
             EqType.SUBDUCTION_OUTERRISE_MANTLE: "subduction_outerrise_mantle",
-        }
-
-    @staticmethod
-    def mantle_mapping():
-        return {
-            EqType.CRUSTAL: EqType.CRUSTAL_MANTLE,
-            EqType.SUBDUCTION_INTERFACE: EqType.SUBDUCTION_INTERFACE_MANTLE,
-            EqType.SUBDUCTION_INTRASLAB: EqType.SUBDUCTION_INTRASLAB_MANTLE,
-            EqType.SUBDUCTION_OUTERRISE: EqType.SUBDUCTION_OUTERRISE_MANTLE,
+            EqType.MANTLE_CRUSTAL: "mantle-crustal",
+            EqType.MANTLE_SUBDUCTION_INTERFACE: "mantle-subduction_interface",
+            EqType.MANTLE_SUBDUCTION_INTRASLAB: "mantle-subduction_intraslab",
+            EqType.MANTLE_SUBDUCTION_OUTERRISE: "mantle-subduction_outerrise",
         }
 
     @staticmethod
     def rename_category(config):
         """
         Re-name earthquake categories by what is specified in the config file's rename section.
-        Function written with assistance from Kiro 2.16.2 claude-sonnet-5
+
+        Function written with assistance from Kiro 2.16.2 claude-sonnet-5.
         """
         rename_config = config["rename"]
         name_to_eqtype = {
