@@ -39,8 +39,8 @@ p_interface_seismogenic:
 # Intraslab membership parameters.
 # Local uncertainty is included if include_uncertainty is True.
 
-# x1: Depth above slab interface (negative) where membership is 0.0.
-# x2: Depth below slab interface (positive) where membership is 1.0.
+# x1: Depth above top of slab (negative) where membership is 0.0.
+# x2: Depth below top of slab (positive) where membership is 1.0.
 p_intraslab_shallow:
   x1: 0.0
   x2: 0.0
