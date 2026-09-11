@@ -84,8 +84,6 @@ p_interface_fx:
 
 # Calculate crustal degree of membership given depth relative to slab depth
 p_crustal_slab:
-  #  x1: -20.0
-  #  x2: 20.0
   p1: 1.0
   p2: 0.0
 

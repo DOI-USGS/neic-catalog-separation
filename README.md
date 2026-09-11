@@ -59,7 +59,7 @@ You are encouraged to update values to best reflect the subduction zone(s) for y
 The parameters can be updated in [config/subduction.yml](neic_catalog_separation/config/subduction.yml).
 
 ```bash
-usage: classify_catalog [-h] [--slab2-regions SLAB2_REGIONS] [--catalog CATALOG_FILENAME] [--output OUTPUT] [--config CONFIG_FILE] [--nshm] [--shallow-tolerance SHALLOW_TOLERANCE] [--deep-tolerance DEEP_TOLERANCE] [--num-processes NUM_PROCESSES]
+usage: classify_catalog [-h] [--slab2-regions SLAB2_REGIONS] [--catalog CATALOG_FILENAME] [--output OUTPUT] [--config CONFIG_FILE] [--nshm] [--num-processes NUM_PROCESSES]
 
     Classify an Earthquake Catalog within a Slab2 Region. Use the 3 letter abbreviations below for the Slab2 region(s) the eartqhuake catalog covers.
 
@@ -103,12 +103,6 @@ options:
                         Path and file name for the input catalog to separate (must be CSV file format).
   --output OUTPUT       Path and file name for the output file.
   --config CONFIG_FILE  Path and file name for the configuration file. If not provided, the default configuration is used.
-  --shallow-tolerance SHALLOW_TOLERANCE
-                        Maximum distance (km) used as a tolerance or buffer for the shallow (updip) portion of the zone around the slab interface in which earthquakes are considered on the interface. Default is 15.0 km.
-  --deep-tolerance DEEP_TOLERANCE
-                        Maximum distance (km) used as a tolerance or buffer for determining the maximum deep seismogenic zone depth cutoff and the deep (downdip) portion of the zone around the slab interface in which earthquakes are considered on the interface. Default is 15.0 km.
-  --crust-tolerance CRUST_TOLERANCE
-                        Maximum distance (km) below the Moho for earthquakes to be considered crustal. Default is 15.0 km.
   --num-processes NUM_PROCESSES
                         Number of processes to use in classification.
   --nshm                Classify earthquakes outside of the specified Slab2 region as outer-rise.

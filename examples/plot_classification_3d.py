@@ -20,8 +20,8 @@ from plotly.subplots import make_subplots
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent.resolve()))
 import focal_mechanism  # noqa: E402
-from neic_catalog_separation import data_sources
 
+from neic_catalog_separation import data_sources
 
 # Same category/color mapping used in plot_classification_slice.py.
 CATEGORY_COLORS = {
@@ -417,13 +417,13 @@ def plot_classification_3d(
     )
 
     panels = ["scene"]
-    titles = ["3D classification"]
+    titles = ["3D Viewer"]
     if coastlines:
         panels.append("geo")
-        titles.append("Map view")
+        titles.append("Map View")
     if focal_mechanisms:
         panels.append("xy")
-        titles.append("Focal mechanisms")
+        titles.append("Interactive Map View with Focal Mechanisms")
 
     specs = [[{"type": panel} for panel in panels]]
     column_widths = [1.0 / len(panels)] * len(panels)
@@ -507,7 +507,7 @@ def plot_classification_3d(
 
     figure.update_scenes(zaxis_autorange="reversed")
     figure.update_layout(
-        title="Earthquake classification",
+        title="Earthquake Classification Results",
         scene=dict(
             xaxis_title="Longitude",
             yaxis_title="Latitude",

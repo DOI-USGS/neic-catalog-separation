@@ -10,6 +10,7 @@ only) to avoid adding ObsPy as a dependency. Written with AI-assisted coding
 tool Kiro CLI 2.16.2 using claude-sonnet-5.
 """
 import io
+
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np

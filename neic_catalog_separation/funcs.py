@@ -1,7 +1,7 @@
 # stdlib imports
-from copy import deepcopy
 import heapq
 import operator
+from copy import deepcopy
 
 import numpy as np
 

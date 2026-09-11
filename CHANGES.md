@@ -23,4 +23,4 @@
   - Add option to re-map categories based on user specified mapping in subduction.yml.
   - Take into account slab depth uncertainty.
   - Take into account slab thickness.
-  - Allow asymetric interface tolerance values by specifying separate shallow (above the interface) and deep (below the interface) tolerance parameters (`--shallow-tolerance` and `--deep-tolerance`). Both default to 15.0 km.
+  - Add the option to include uncertainty to account for earthquake location uncertainty, as well as slab and crust uncertainties by specifying crustal, interface, and intraslab tolerance values in the `subduction.yml` config file.
