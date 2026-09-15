@@ -84,18 +84,18 @@ def create_colormap():
     mantle = hex_to_rgb(COLORS["mantle"])
     colormap.update(
         {
-            "crustal_subduction_interface": mix_colors(crustal, interface),
-            "crustal_mantle": mix_colors(crustal, mantle),
-            "subduction_interface_crustal": mix_colors(interface, crustal),
-            "subduction_interface_intraslab": mix_colors(interface, intraslab),
-            "subduction_interface_mantle": mix_colors(interface, mantle),
-            "subduction_intraslab_interface": mix_colors(intraslab, interface),
-            "subduction_intraslab_mantle": mix_colors(intraslab, mantle),
-            "subduction_outerrise_mantle": mix_colors(outerrise, mantle),
-            "mantle_crustal": mix_colors(mantle, crustal),
-            "mantle_subduction_interface": mix_colors(mantle, interface),
-            "mantle_subduction_intraslab": mix_colors(mantle, intraslab),
-            "mantle_subduction_outerrise": mix_colors(mantle, outerrise),
+            "crustal-subduction_interface": mix_colors(crustal, interface),
+            "crustal-mantle": mix_colors(crustal, mantle),
+            "subduction_interface-crustal": mix_colors(interface, crustal),
+            "subduction_interface-subduction_intraslab": mix_colors(interface, intraslab),
+            "subduction_interface-mantle": mix_colors(interface, mantle),
+            "subduction_intraslab-subduction_interface": mix_colors(intraslab, interface),
+            "subduction_intraslab-mantle": mix_colors(intraslab, mantle),
+            "subduction_outerrise-mantle": mix_colors(outerrise, mantle),
+            "mantle-crustal": mix_colors(mantle, crustal),
+            "mantle-subduction_interface": mix_colors(mantle, interface),
+            "mantle-subduction_intraslab": mix_colors(mantle, intraslab),
+            "mantle-subduction_outerrise": mix_colors(mantle, outerrise),
         }
     )
     return colormap
@@ -398,7 +398,34 @@ class PlotSlice:
         figure.write_html(filename)
 
     def _render_matplotlib(self, filename: pathlib.Path, data: SliceData):
-        return
+        from matplotlib import pyplot
+
+        styles = (
+            "matplotlib_extras.size-paper",
+            "matplotlib_extras.color-darkbg",
+        )
+        pyplot.style.use(styles)
+
+        fig_height = 4.0
+        fig_width = 10.0
+
+        figure = pyplot.figure(figsize=(fig_width, fig_height), layout="constrained", dpi=300)
+        ax = figure.add_subplot()
+        ax.spines[["top", "right"]].set_visible(False)
+
+        categories = sorted(data.category.unique())
+        color_map = create_colormap()
+        for category in categories:
+            mask = data.category == category
+            longitude = data.longitude.filter(mask)
+            depth = data.depth.filter(mask)
+            ax.plot(longitude, depth, lw=0, marker="o", ms=4, mec=color_map[category], mfc=color_map[category], label=category)
+        ax.set_xlabel("Longitude")
+        ax.set_ylabel("Depth, km")
+        ax.invert_yaxis()
+        ax.set_title("Earthquake Classification")
+        ax.legend(loc="lower right")
+        figure.savefig(filename)
 
 
 if __name__ == "__main__":

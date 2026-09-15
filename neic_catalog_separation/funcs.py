@@ -280,7 +280,7 @@ def get_category(p_interface, p_intraslab, p_crustal, p_mantle, p_outerrise):
         (
             EqType.SUBDUCTION_INTERFACE,
             EqType.SUBDUCTION_INTRASLAB,
-        ): EqType.SUBDUCTION_INTERFACE_INTRASLAB,
+        ): EqType.SUBDUCTION_INTERFACE_SUBDUCTION_INTRASLAB,
         (
             EqType.SUBDUCTION_INTERFACE,
             EqType.MANTLE,
@@ -288,7 +288,7 @@ def get_category(p_interface, p_intraslab, p_crustal, p_mantle, p_outerrise):
         (
             EqType.SUBDUCTION_INTRASLAB,
             EqType.SUBDUCTION_INTERFACE,
-        ): EqType.SUBDUCTION_INTRASLAB_INTERFACE,
+        ): EqType.SUBDUCTION_INTRASLAB_SUBDUCTION_INTERFACE,
         (
             EqType.SUBDUCTION_INTRASLAB,
             EqType.MANTLE,

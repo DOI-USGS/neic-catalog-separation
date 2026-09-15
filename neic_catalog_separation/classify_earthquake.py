@@ -178,10 +178,9 @@ def classify(
             x=eq_depth - interface_depth_eq,
             x1=config["p_interface_deep"]["x1"],
             x2=+slab_uncertainty_eq + config["p_interface_deep"]["x2"],
-            p1=config["p_interface_slab"]["p2"],
-            p2=config["p_interface_slab"]["p1"],
+            p1=1.0,
+            p2=0.0,
         )
-
         # Calculate probability that event occurred between the seismogenic zone and maximum seismogenic zone (deep_limit)
         p_interface_sz = funcs.get_probability(
             x=eq_depth - sz_deep,
@@ -239,26 +238,32 @@ def classify(
             p1=1.0,
             p2=0.0,
         )
-        p_intraslab = p_intraslab_shallow * p_intraslab_deep
+        p_intraslab_wedge = 1.0 - p_interface_deep
 
-        p_sum = p_interface + p_crustal + p_intraslab + p_outerrise
-        if p_sum > 1.0:  # overlapping regions
-            p_interface /= p_sum
-            p_crustal /= p_sum
-            p_intraslab /= p_sum
-            p_outerrise /= p_sum
-        p_mantle = 1.0 - (p_interface + p_crustal + p_intraslab)
+        # Maximum depth of interface probabilities
+        interface_maxdepth = sz_deep + slab_uncertainty_eq + config["p_interface_seismogenic"]["x2"]
+        p_intraslab = (
+            # Above sz_deep + buffer = wedge.
+            p_intraslab_wedge * p_intraslab_deep if eq_depth < interface_maxdepth
+            # Below sz_deep + buffer = within slab.
+            else p_intraslab_shallow * p_intraslab_deep
+        )
 
-        total = p_interface + p_intraslab + p_crustal + p_mantle + p_outerrise
-        if abs(total - 1.0) > 0.01 and total != 0.0:
-            print(
-                f"WARNING: Total ({total}) is not 1.0. "
-                f"p_interface={p_interface} "
-                f"p_intraslab={p_intraslab} "
-                f"p_crustal={p_crustal} "
-                f"p_mantle={p_mantle} "
-                f"p_outerrise={p_outerrise}"
-            )
+        # Mantle: crust
+        p_mantle_crust = 1.0 - p_crustal_moho
+        p_mantle_interface_shallow = 1.0 - p_interface_shallow
+        p_mantle_intraslab_deep = 1.0 - p_intraslab_deep
+        if eq_depth < interface_depth_eq + config["p_interface_shallow"]["x2"]:
+            p_mantle = p_mantle_crust * p_mantle_interface_shallow
+        else:
+            p_mantle = p_mantle_intraslab_deep
+
+        p_sum = p_interface + p_crustal + p_intraslab + p_outerrise + p_mantle
+        p_interface /= p_sum
+        p_crustal /= p_sum
+        p_intraslab /= p_sum
+        p_outerrise /= p_sum
+        p_mantle /= p_sum
 
     # turn probabilities into percentages
     p_crustal *= 100

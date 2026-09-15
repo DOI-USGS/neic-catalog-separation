@@ -16,10 +16,10 @@ class EqType(Enum):
     CRUSTAL_MANTLE = 15
 
     SUBDUCTION_INTERFACE_CRUSTAL = 21
-    SUBDUCTION_INTERFACE_INTRASLAB = 23
+    SUBDUCTION_INTERFACE_SUBDUCTION_INTRASLAB = 23
     SUBDUCTION_INTERFACE_MANTLE = 25
 
-    SUBDUCTION_INTRASLAB_INTERFACE = 32
+    SUBDUCTION_INTRASLAB_SUBDUCTION_INTERFACE = 32
     SUBDUCTION_INTRASLAB_MANTLE = 35
 
     SUBDUCTION_OUTERRISE_MANTLE = 45
@@ -47,11 +47,11 @@ class EqType(Enum):
             EqType.CRUSTAL_SUBDUCTION_INTERFACE: "crustal-subduction_interface",
             EqType.CRUSTAL_MANTLE: "crustal-mantle",
             EqType.SUBDUCTION_INTERFACE_CRUSTAL: "subduction_interface-crustal",
-            EqType.SUBDUCTION_INTERFACE_INTRASLAB: "subduction_interface-intraslab",
+            EqType.SUBDUCTION_INTERFACE_SUBDUCTION_INTRASLAB: "subduction_interface-subduction_intraslab",
             EqType.SUBDUCTION_INTERFACE_MANTLE: "subduction_interface-mantle",
-            EqType.SUBDUCTION_INTRASLAB_INTERFACE: "subduction_intraslab_interface",
-            EqType.SUBDUCTION_INTRASLAB_MANTLE: "subduction_intraslab_mantle",
-            EqType.SUBDUCTION_OUTERRISE_MANTLE: "subduction_outerrise_mantle",
+            EqType.SUBDUCTION_INTRASLAB_SUBDUCTION_INTERFACE: "subduction_intraslab-subduction_interface",
+            EqType.SUBDUCTION_INTRASLAB_MANTLE: "subduction_intraslab-mantle",
+            EqType.SUBDUCTION_OUTERRISE_MANTLE: "subduction_outerrise-mantle",
             EqType.MANTLE_CRUSTAL: "mantle-crustal",
             EqType.MANTLE_SUBDUCTION_INTERFACE: "mantle-subduction_interface",
             EqType.MANTLE_SUBDUCTION_INTRASLAB: "mantle-subduction_intraslab",
@@ -72,7 +72,7 @@ class EqType(Enum):
 
         def _to_eqtype(value):
             name = value.split(".", 1)[1] if value.startswith("EqType.") else value
-            return name_to_eqtype.get(name.lower(), EqType[name.upper()])
+            return name_to_eqtype.get(name.lower(), EqType[name.upper().replace("-","_")])
 
         return {
             _to_eqtype(from_name): _to_eqtype(to_name)

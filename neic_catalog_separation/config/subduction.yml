@@ -28,7 +28,7 @@ p_interface_shallow:
 # x2: Depth below slab interface (positive) where membership is 0.0.
 p_interface_deep:
   x1: 0.0
-  x2: 30.0
+  x2: 60.0
 
 # x1: Depth above slab interface (negative) where membership is 1.0.
 # x2: Depth below slab interface (positive) where membership is 0.0.
@@ -51,6 +51,12 @@ p_intraslab_deep:
   x1: 0.0
   x2: +50.0
 
+# x1: Depth above interface seismogenic depth (negative) where membership is 0.0.
+# x2: Depth below interface seismogenic depth (positive) where membership is 1.0.
+p_intraslab_seismogenic:
+  x1: -30.0
+  x2: 0.0
+
 # Outer rise membership parameters.
 
 # Maximum distance from slab to consider as outer rise
@@ -65,67 +71,20 @@ p_outerrise:
   x1: 0.0
   x2: 20.0
 
-# Obsolete
-
-# Calculate interface degree of membership given depth relative to slab interface
-p_interface_slab:
-  p1: 0.0
-  p2: 1.0
-
-# Calculate interface degree of membership given depth below seismogenic zone
-p_interface_sz:
-  p1: 1.0
-  p2: 0.0
-
-# Calculate interface degree of membership given depth within flex zone part 2
-p_interface_fx:
-  p1: 0.0
-  p2: 0.4
-
-# Calculate crustal degree of membership given depth relative to slab depth
-p_crustal_slab:
-  p1: 1.0
-  p2: 0.0
-
-# Calculate crustal degree of membership given depth relative to Moho depth and slab depth
-p_crustal_moho_slab:
-  p1: 1.0
-  p2: 0.0
-
-# Calculate crustal degree of membership given depth relative to moho depth
-p_crustal_moho:
-  p1: 1.0
-  p2: 0.0
-
-# Calculate outer-rise degree of membership given depth relative to moho depth
-p_outerrise_moho:
-  p1: 1.0
-  p2: 0.0
-
-# Calculate intraslab degree of membership given depth relative to top of slab
-p_intraslab_interface:
-  p1: 0.0
-  p2: 1.0
-
-# Calculate intraslab degree of membership given depth relative to bottom of slab
-p_intraslab_slab:
-  p1: 1.0
-  p2: 0.0
-
 # To re-name/re-map any categories, uncomment the renaming dictionary below. This can be edited as desired.
 # rename:
-#   crustal_subduction_interface: EqType.CRUSTAL
-#   crustal_mantle: EqType.CRUSTAL
+#   crustal-subduction_interface: EqType.CRUSTAL
+#   crustal-mantle: EqType.CRUSTAL
 #   #mantle: EqType.UNKNOWN
-#   subduction_interface_crustal: EqType.SUBDUCTION_INTERFACE
-#   subduction_interface_intraslab: EqType.SUBDUCTION_INTERFACE
-#   subduction_interface_mantle: EqType.SUBDUCTION_INTERFACE
+#   subduction_interface-crustal: EqType.SUBDUCTION_INTERFACE
+#   subduction_interface-subduction_intraslab: EqType.SUBDUCTION_INTERFACE
+#   subduction_interface-mantle: EqType.SUBDUCTION_INTERFACE
 
-#   subduction_intraslab_interface: EqType.SUBDUCTION_INTERFACE
-#   subduction_intraslab_mantle: EqType.SUBDUCTION_INTRASLAB
-#   subduction_outerrise_mantle: EqType.SUBDUCTION_OUTERRISE
+#   subduction_intraslab-subduction_interface: EqType.SUBDUCTION_INTERFACE
+#   subduction_intraslab-mantle: EqType.SUBDUCTION_INTRASLAB
+#   subduction_outerrise-mantle: EqType.SUBDUCTION_OUTERRISE
 
-#   mantle_crustal: EqType.CRUSTAL
-#   mantle_subduction_interface: EqType.SUBDUCTION_INTERFACE
-#   mantle_subduction_intraslab: EqType.SUBDUCTION_INTRASLAB
-#   mantle_subduction_outerrise: EqType.SUBDUCTION_OUTERRISE
+#   mantle-crustal: EqType.CRUSTAL
+#   mantle-subduction_interface: EqType.SUBDUCTION_INTERFACE
+#   mantle-subduction_intraslab: EqType.SUBDUCTION_INTRASLAB
+#   mantle-subduction_outerrise: EqType.SUBDUCTION_OUTERRISE
