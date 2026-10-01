@@ -1,7 +1,7 @@
 import pathlib
 
-import pytest
 import numpy as np
+import pytest
 
 from neic_catalog_separation import data_sources
 

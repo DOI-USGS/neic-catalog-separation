@@ -1,4 +1,6 @@
 # stdlib imports
+import heapq
+import operator
 from copy import deepcopy
 
 import numpy as np
@@ -258,21 +260,68 @@ def ang_from_R1R2(R1, R2):
 
 
 def get_category(p_interface, p_intraslab, p_crustal, p_mantle, p_outerrise):
-    categories = (
-        EqType.CRUSTAL,
-        EqType.SUBDUCTION_INTERFACE,
-        EqType.SUBDUCTION_INTRASLAB,
-        EqType.SUBDUCTION_OUTERRISE,
-        EqType.UNKNOWN,
+    probabilities = (
+        (p_crustal, EqType.CRUSTAL),
+        (p_interface, EqType.SUBDUCTION_INTERFACE),
+        (p_intraslab, EqType.SUBDUCTION_INTRASLAB),
+        (p_outerrise, EqType.SUBDUCTION_OUTERRISE),
+        (p_mantle, EqType.MANTLE),
     )
-    index = np.argmax([p_crustal, p_interface, p_intraslab, p_outerrise])
-    category = categories[index]
-    if p_mantle == 100.0:
-        category = EqType.MANTLE
-    elif p_mantle > 50.0:
-        category = EqType.mantle_mapping()[category]
+    mixed_categories = {
+        (
+            EqType.CRUSTAL,
+            EqType.SUBDUCTION_INTERFACE,
+        ): EqType.CRUSTAL_SUBDUCTION_INTERFACE,
+        (EqType.CRUSTAL, EqType.MANTLE): EqType.CRUSTAL_MANTLE,
+        (
+            EqType.SUBDUCTION_INTERFACE,
+            EqType.CRUSTAL,
+        ): EqType.SUBDUCTION_INTERFACE_CRUSTAL,
+        (
+            EqType.SUBDUCTION_INTERFACE,
+            EqType.SUBDUCTION_INTRASLAB,
+        ): EqType.SUBDUCTION_INTERFACE_SUBDUCTION_INTRASLAB,
+        (
+            EqType.SUBDUCTION_INTERFACE,
+            EqType.MANTLE,
+        ): EqType.SUBDUCTION_INTERFACE_MANTLE,
+        (
+            EqType.SUBDUCTION_INTRASLAB,
+            EqType.SUBDUCTION_INTERFACE,
+        ): EqType.SUBDUCTION_INTRASLAB_SUBDUCTION_INTERFACE,
+        (
+            EqType.SUBDUCTION_INTRASLAB,
+            EqType.MANTLE,
+        ): EqType.SUBDUCTION_INTRASLAB_MANTLE,
+        (
+            EqType.SUBDUCTION_OUTERRISE,
+            EqType.MANTLE,
+        ): EqType.SUBDUCTION_OUTERRISE_MANTLE,
+        (EqType.MANTLE, EqType.CRUSTAL): EqType.MANTLE_CRUSTAL,
+        (
+            EqType.MANTLE,
+            EqType.SUBDUCTION_INTERFACE,
+        ): EqType.MANTLE_SUBDUCTION_INTERFACE,
+        (
+            EqType.MANTLE,
+            EqType.SUBDUCTION_INTRASLAB,
+        ): EqType.MANTLE_SUBDUCTION_INTRASLAB,
+        (
+            EqType.MANTLE,
+            EqType.SUBDUCTION_OUTERRISE,
+        ): EqType.MANTLE_SUBDUCTION_OUTERRISE,
+    }
+    top_categories = heapq.nlargest(2, probabilities, key=operator.itemgetter(0))
     if p_interface == p_intraslab == p_crustal == p_mantle == p_outerrise:
         category = EqType.UNKNOWN
+    elif top_categories[1][0] == 0.0:
+        category = top_categories[0][1]
+    else:
+        labels = tuple([c for _, c in top_categories])
+        if labels in mixed_categories:
+            category = mixed_categories[labels]
+        else:
+            category = labels[0]
     return category
 
 

@@ -5,7 +5,7 @@ Sample slices:
 
 1. Kermadec
 
-`./plot_classification_slice.py --latitude=-20.0 --min-longitude=-179.95 --max-longitude=-170.0 --max-depth=800.0 --regions=ker --create-catalog --classify --plot --num-processes=32 --filename=kermadec_slice.html`
+`./plot_classification_slice.py --latitude=-20.0 --min-longitude=-182.0 --max-longitude=-171.0 --max-depth=900.0 --regions=ker --create-catalog --classify --plot --num-processes=16 --filename=kermadec_slice.html`
 
 
 # :TODO: Add Moho depth on plot.
@@ -15,25 +15,95 @@ Sample slices:
 # :TODO: Add slab interface 'buffer' on plot.
 # :TODO: Add slab thickness 'buffer' on plot.
 """
+
 import dataclasses
 import pathlib
 
 import numpy
 import polars
 
-
-COLORMAP = {
-    "crustal": "orange",
-    "subduction_interface": "orchid",
-    "subduction_intraslab": "darkgray",
-    "subduction_outerrise": "red",
-    "mantle": "wheat",
-    "crustal_mantle": "salmon",
-    "subduction_interface_mantle": "purple",
-    "subduction_intraslab_mantle": "lightslategray",
-    "subduction_outerrise_mantle": "darkred",
-    "unknown": "pink",
+COLORS = {
+    "crustal": "#ffa500",
+    "subduction_interface": "#da70d6",
+    "subduction_intraslab": "#00ff00",
+    "subduction_outerrise": "#ff0000",
+    "mantle": "#f5deb3",
 }
+
+
+def hex_to_rgb(h: str):
+    """Convert hex color string to tuple of 3 ints (RGB).
+
+    Args:
+        h: Hex color string.
+    Returns:
+        RGB color as tuple of 3 ints.
+    """
+    h_raw = h.lstrip("#")
+    return tuple(int(h_raw[i : i + 2], 16) for i in (0, 2, 4))
+
+
+def rgb_to_hex(rgb):
+    """Convert RGB color as tuple of 3 ints to a hex color string.
+
+    Args:
+        rgb: RGB color as tuple of 3 ints.
+    Returns:
+        Hex color string.
+    """
+    return f"#{rgb[0]:02x}{rgb[1]:02x}{rgb[2]:02x}"
+
+
+def mix_colors(c0: tuple, c1: tuple):
+    """Mix colors 2/3 c0 and 1/3 c1.
+
+    Ags:
+        c0: First color as tuple of 3 ints (weight is 2/3)
+        c1: Second color as tuple of 3 ints (weight is 1/3)
+    Returns:
+        Hex string for color.
+    """
+    x = numpy.array(c0)
+    y = numpy.array(c1)
+    z = 2 / 3 * x + 1 / 3 * y
+    c_mix = [int(v) for v in z]
+    return rgb_to_hex(c_mix)
+
+
+def create_colormap():
+    """Create color map with mixed categories.
+
+    Returns:
+        Dictionary mapping earthquake categories to colors.
+    """
+    colormap = COLORS.copy()
+    crustal = hex_to_rgb(COLORS["crustal"])
+    interface = hex_to_rgb(COLORS["subduction_interface"])
+    intraslab = hex_to_rgb(COLORS["subduction_intraslab"])
+    outerrise = hex_to_rgb(COLORS["subduction_outerrise"])
+    mantle = hex_to_rgb(COLORS["mantle"])
+    colormap.update(
+        {
+            "crustal-subduction_interface": mix_colors(crustal, interface),
+            "crustal-mantle": mix_colors(crustal, mantle),
+            "subduction_interface-crustal": mix_colors(interface, crustal),
+            "subduction_interface-subduction_intraslab": mix_colors(
+                interface, intraslab
+            ),
+            "subduction_interface-mantle": mix_colors(interface, mantle),
+            "subduction_intraslab-subduction_interface": mix_colors(
+                intraslab, interface
+            ),
+            "subduction_intraslab-mantle": mix_colors(intraslab, mantle),
+            "subduction_outerrise-mantle": mix_colors(outerrise, mantle),
+            "mantle-crustal": mix_colors(mantle, crustal),
+            "mantle-subduction_interface": mix_colors(mantle, interface),
+            "mantle-subduction_intraslab": mix_colors(mantle, intraslab),
+            "mantle-subduction_outerrise": mix_colors(mantle, outerrise),
+        }
+    )
+    return colormap
+
 
 def cli():
     import argparse
@@ -253,7 +323,6 @@ class PlotSlice:
             / "config"
             / "subduction.yml",
             num_processes=n_processes,
-            tolerance=15.0,
             nshm=True,
         )
 
@@ -322,7 +391,7 @@ class PlotSlice:
                 "p_outerrise": data.p_outerrise,
                 "p_mantle": data.p_mantle,
             },
-            color_discrete_map=COLORMAP,
+            color_discrete_map=create_colormap(),
             title="Vertical cross section",
             labels={
                 "x": "Longitude",
@@ -333,7 +402,45 @@ class PlotSlice:
         figure.write_html(filename)
 
     def _render_matplotlib(self, filename: pathlib.Path, data: SliceData):
-        return
+        from matplotlib import pyplot
+
+        styles = (
+            "matplotlib_extras.size-paper",
+            "matplotlib_extras.color-darkbg",
+        )
+        pyplot.style.use(styles)
+
+        fig_height = 4.0
+        fig_width = 10.0
+
+        figure = pyplot.figure(
+            figsize=(fig_width, fig_height), layout="constrained", dpi=300
+        )
+        ax = figure.add_subplot()
+        ax.spines[["top", "right"]].set_visible(False)
+
+        categories = sorted(data.category.unique())
+        color_map = create_colormap()
+        for category in categories:
+            mask = data.category == category
+            longitude = data.longitude.filter(mask)
+            depth = data.depth.filter(mask)
+            ax.plot(
+                longitude,
+                depth,
+                lw=0,
+                marker="o",
+                ms=4,
+                mec=color_map[category],
+                mfc=color_map[category],
+                label=category,
+            )
+        ax.set_xlabel("Longitude")
+        ax.set_ylabel("Depth, km")
+        ax.invert_yaxis()
+        ax.set_title("Earthquake Classification")
+        ax.legend(loc="lower right")
+        figure.savefig(filename)
 
 
 if __name__ == "__main__":
