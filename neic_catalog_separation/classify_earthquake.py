@@ -241,7 +241,7 @@ def classify(
         p_intraslab_wedge = 1.0 - p_interface_deep
 
         # Maximum depth of interface probabilities
-        interface_maxdepth = sz_deep + slab_uncertainty_eq + config["p_interface_seismogenic"]["x2"]
+        interface_maxdepth = sz_deep + config["p_interface_seismogenic"]["x2"]
         p_intraslab = (
             # Above sz_deep + buffer = wedge.
             p_intraslab_wedge * p_intraslab_deep if eq_depth < interface_maxdepth
