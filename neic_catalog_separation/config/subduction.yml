@@ -80,7 +80,7 @@ p_outerrise:
 #   subduction_interface-subduction_intraslab: EqType.SUBDUCTION_INTERFACE
 #   subduction_interface-mantle: EqType.SUBDUCTION_INTERFACE
 
-#   subduction_intraslab-subduction_interface: EqType.SUBDUCTION_INTERFACE
+#   subduction_intraslab-subduction_interface: EqType.SUBDUCTION_INTRASLAB
 #   subduction_intraslab-mantle: EqType.SUBDUCTION_INTRASLAB
 #   subduction_outerrise-mantle: EqType.SUBDUCTION_OUTERRISE
 
