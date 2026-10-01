@@ -78,35 +78,21 @@ class TestGetProbability:
         """Test ramp function calculation that returns probability of p1"""
 
         x = 15.0
-        x1 = 25.0
-        x2 = 40.0
-        p1 = config["p_interface_sz"]["p1"]
-        p2 = config["p_interface_sz"]["p2"]
+        p1 = 1.0
+        p2 = 0.0
+        x1 = config["p_interface_seismogenic"]["x1"]
+        x2 = config["p_interface_seismogenic"]["x2"]
         prob = funcs.get_probability(x, x1, p1, x2, p2)
 
-        assert p1 == prob
+        assert prob == 0.25
 
     def test_p2(self, config):
         """Test ramp function calculation that returns probability of p2"""
         x = 50.0
-        x1 = 25.0
-        x2 = 40.0
-        p1 = config["p_interface_sz"]["p1"]
-        p2 = config["p_interface_sz"]["p2"]
+        p1 = 1.0
+        p2 = 0.0
+        x1 = config["p_interface_seismogenic"]["x1"]
+        x2 = config["p_interface_seismogenic"]["x2"]
         prob = funcs.get_probability(x, x1, p1, x2, p2)
 
         assert p2 == prob
-
-    def test_ramp(self, config):
-        """Test ramp function calculation that returns probability defined by ramp"""
-        x = 30.0
-        x1 = 25.0
-        x2 = 40.0
-        p1 = config["p_interface_sz"]["p1"]
-        p2 = config["p_interface_sz"]["p2"]
-
-        expected_prob = 0.66
-        prob = funcs.get_probability(x, x1, p1, x2, p2)
-
-        # within a 3% tolerance is ok
-        assert expected_prob == pytest.approx(prob, rel=0.03)

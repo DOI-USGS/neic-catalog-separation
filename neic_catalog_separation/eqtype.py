@@ -72,7 +72,9 @@ class EqType(Enum):
 
         def _to_eqtype(value):
             name = value.split(".", 1)[1] if value.startswith("EqType.") else value
-            return name_to_eqtype.get(name.lower(), EqType[name.upper().replace("-","_")])
+            return name_to_eqtype.get(
+                name.lower(), EqType[name.upper().replace("-", "_")]
+            )
 
         return {
             _to_eqtype(from_name): _to_eqtype(to_name)

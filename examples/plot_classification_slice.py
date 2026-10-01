@@ -87,9 +87,13 @@ def create_colormap():
             "crustal-subduction_interface": mix_colors(crustal, interface),
             "crustal-mantle": mix_colors(crustal, mantle),
             "subduction_interface-crustal": mix_colors(interface, crustal),
-            "subduction_interface-subduction_intraslab": mix_colors(interface, intraslab),
+            "subduction_interface-subduction_intraslab": mix_colors(
+                interface, intraslab
+            ),
             "subduction_interface-mantle": mix_colors(interface, mantle),
-            "subduction_intraslab-subduction_interface": mix_colors(intraslab, interface),
+            "subduction_intraslab-subduction_interface": mix_colors(
+                intraslab, interface
+            ),
             "subduction_intraslab-mantle": mix_colors(intraslab, mantle),
             "subduction_outerrise-mantle": mix_colors(outerrise, mantle),
             "mantle-crustal": mix_colors(mantle, crustal),
@@ -409,7 +413,9 @@ class PlotSlice:
         fig_height = 4.0
         fig_width = 10.0
 
-        figure = pyplot.figure(figsize=(fig_width, fig_height), layout="constrained", dpi=300)
+        figure = pyplot.figure(
+            figsize=(fig_width, fig_height), layout="constrained", dpi=300
+        )
         ax = figure.add_subplot()
         ax.spines[["top", "right"]].set_visible(False)
 
@@ -419,7 +425,16 @@ class PlotSlice:
             mask = data.category == category
             longitude = data.longitude.filter(mask)
             depth = data.depth.filter(mask)
-            ax.plot(longitude, depth, lw=0, marker="o", ms=4, mec=color_map[category], mfc=color_map[category], label=category)
+            ax.plot(
+                longitude,
+                depth,
+                lw=0,
+                marker="o",
+                ms=4,
+                mec=color_map[category],
+                mfc=color_map[category],
+                label=category,
+            )
         ax.set_xlabel("Longitude")
         ax.set_ylabel("Depth, km")
         ax.invert_yaxis()

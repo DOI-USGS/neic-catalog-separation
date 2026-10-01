@@ -10,6 +10,7 @@ Written with AI-assisted coding tool Kiro CLI 2.16.2 using claude-sonnet-5.
 """
 import argparse
 import base64
+import json
 import pathlib
 import sys
 
@@ -99,6 +100,14 @@ def cli():
         "file size and load time reasonable for large catalogs). Events beyond "
         "this count are skipped.",
     )
+    parser.add_argument(
+        "--outerrise-geojson",
+        dest="outerrise_geojson",
+        default=None,
+        help="Path to a GeoJSON file (e.g. amsam2026_outerrise.json) whose "
+        "polygon boundary/boundaries are drawn as an outline on the focal "
+        "mechanism map panel (requires --focal-mechanisms).",
+    )
     args = parser.parse_args()
 
     plot_classification_3d(
@@ -110,6 +119,7 @@ def cli():
         focal_mechanisms=args.focal_mechanisms,
         focal_mechanism_size_deg=args.focal_mechanism_size_deg,
         max_focal_mechanisms=args.max_focal_mechanisms,
+        outerrise_geojson=args.outerrise_geojson,
     )
 
     return 0
@@ -250,6 +260,60 @@ def _add_geo_scatter(figure, data, row, col):
         )
 
 
+def _geojson_polygon_rings(geojson_path):
+    """Yield (longitudes, latitudes) coordinate rings for every Polygon /
+    MultiPolygon in a GeoJSON file, so they can be drawn as outlines.
+    """
+    with open(geojson_path) as handle:
+        geojson = json.load(handle)
+
+    if geojson.get("type") == "FeatureCollection":
+        geometries = [feature.get("geometry") for feature in geojson.get("features", [])]
+    elif geojson.get("type") == "Feature":
+        geometries = [geojson.get("geometry")]
+    else:
+        geometries = [geojson]
+
+    for geometry in geometries:
+        if not geometry:
+            continue
+        geometry_type = geometry.get("type")
+        if geometry_type == "Polygon":
+            polygons = [geometry["coordinates"]]
+        elif geometry_type == "MultiPolygon":
+            polygons = geometry["coordinates"]
+        else:
+            continue
+        for polygon in polygons:
+            for ring in polygon:
+                longitudes = [coord[0] for coord in ring]
+                latitudes = [coord[1] for coord in ring]
+                yield longitudes, latitudes
+
+
+def _add_geojson_outline(figure, geojson_path, row, col, xaxis=None, yaxis=None):
+    """Draw the polygon boundary/boundaries from a GeoJSON file as a line
+    outline on a cartesian (longitude/latitude) subplot panel.
+    """
+    for index, (longitudes, latitudes) in enumerate(_geojson_polygon_rings(geojson_path)):
+        trace = plotly.graph_objects.Scatter(
+            x=longitudes,
+            y=latitudes,
+            mode="lines",
+            line=dict(color="black", width=2),
+            name="outer-rise region",
+            legendgroup="outerrise-region",
+            # Only show one legend entry for potentially many rings.
+            showlegend=index == 0,
+            hoverinfo="skip",
+        )
+        if xaxis is not None and yaxis is not None:
+            trace.update(xaxis=xaxis, yaxis=yaxis)
+            figure.add_trace(trace)
+        else:
+            figure.add_trace(trace, row=row, col=col)
+
+
 def _add_focal_mechanism_panel(
     figure,
     data,
@@ -257,6 +321,7 @@ def _add_focal_mechanism_panel(
     col,
     size_deg: float = None,
     max_mechanisms: int = 500,
+    outerrise_geojson=None,
 ):
     """Add a plain longitude/latitude panel plotting each event's focal
     mechanism ("beachball") image at its location, plus a category-colored
@@ -391,6 +456,11 @@ def _add_focal_mechanism_panel(
             col=col,
         )
 
+    if outerrise_geojson is not None:
+        _add_geojson_outline(
+            figure, outerrise_geojson, row=row, col=col, xaxis=xaxis, yaxis=yaxis
+        )
+
 
 def plot_classification_3d(
     catalog_filename: str,
@@ -401,6 +471,7 @@ def plot_classification_3d(
     focal_mechanisms: bool = False,
     focal_mechanism_size_deg: float = None,
     max_focal_mechanisms: int = 500,
+    outerrise_geojson=None,
 ):
     """Render a 3D (longitude, latitude, depth) scatter plot of a classified
     earthquake catalog, colored by eq_category, and write it to an HTML file.
@@ -498,6 +569,7 @@ def plot_classification_3d(
             col=next_col,
             size_deg=focal_mechanism_size_deg,
             max_mechanisms=max_focal_mechanisms,
+            outerrise_geojson=outerrise_geojson,
         )
         figure.update_xaxes(title_text="Longitude", row=1, col=next_col)
         figure.update_yaxes(
