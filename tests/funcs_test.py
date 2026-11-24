@@ -47,7 +47,7 @@ class TestDetermineQuality:
         assert expected_quality == quality
 
     def test_quality_eq(self):
-        "Test quality determination for equal (eq) probabilty"
+        "Test quality determination for equal (eq) probability"
         expected_quality = "D"
         quality = funcs.determine_quality(
             EqType.SUBDUCTION_INTERFACE, 0, 50, 50, np.nan, 0

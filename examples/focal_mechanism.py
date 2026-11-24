@@ -39,14 +39,18 @@ def p_wave_polarity(
 
     term1 = np.cos(lam) * np.sin(delta) * np.sin(ih) ** 2 * np.sin(2.0 * az_phi)
     term2 = -np.cos(lam) * np.cos(delta) * np.sin(2.0 * ih) * np.cos(az_phi)
-    term3 = np.sin(lam) * np.sin(2.0 * delta) * (
-        np.cos(ih) ** 2 - np.sin(ih) ** 2 * np.sin(az_phi) ** 2
+    term3 = (
+        np.sin(lam)
+        * np.sin(2.0 * delta)
+        * (np.cos(ih) ** 2 - np.sin(ih) ** 2 * np.sin(az_phi) ** 2)
     )
     term4 = np.sin(lam) * np.cos(2.0 * delta) * np.sin(2.0 * ih) * np.sin(az_phi)
     return term1 + term2 + term3 + term4
 
 
-def focal_mechanism_quadrants(strike: float, dip: float, rake: float, resolution: int = 181):
+def focal_mechanism_quadrants(
+    strike: float, dip: float, rake: float, resolution: int = 181
+):
     """Compute the compressional-quadrant mask over a lower-hemisphere,
     equal-area projection grid for a double-couple focal mechanism.
 
@@ -101,7 +105,9 @@ def render_beachball_png(
     matplotlib.use("Agg")
 
     resolution = max(size_px, 121)
-    x, y, compressional = focal_mechanism_quadrants(strike, dip, rake, resolution=resolution)
+    x, y, compressional = focal_mechanism_quadrants(
+        strike, dip, rake, resolution=resolution
+    )
 
     fig = plt.figure(figsize=(size_px / 100.0, size_px / 100.0), dpi=100)
     ax = fig.add_axes([0, 0, 1, 1])

@@ -30,8 +30,8 @@ p_interface_deep:
   x1: 0.0
   x2: 60.0
 
-# x1: Depth above slab interface (negative) where membership is 1.0.
-# x2: Depth below slab interface (positive) where membership is 0.0.
+# x1: Depth above seismogenic zone depth (negative) where membership is 1.0.
+# x2: Depth below seismogenic zone depth (positive) where membership is 0.0.
 p_interface_seismogenic:
   x1: 0.0
   x2: 20.0
@@ -51,8 +51,8 @@ p_intraslab_deep:
   x1: 0.0
   x2: +50.0
 
-# x1: Depth above interface seismogenic depth (negative) where membership is 0.0.
-# x2: Depth below interface seismogenic depth (positive) where membership is 1.0.
+# x1: Depth above seismogenic zone depth (negative) where membership is 0.0.
+# x2: Depth below seismogenic zone depth (positive) where membership is 1.0.
 p_intraslab_seismogenic:
   x1: -30.0
   x2: 0.0

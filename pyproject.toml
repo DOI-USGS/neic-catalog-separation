@@ -9,7 +9,7 @@ profile = "black"
 [tool.poetry]
 name = "neic-catalog-separation"
 authors = ["Kirstie Haynie <khaynie@usgs.gov>", "Brad Aagaard <baagaard@usgs.gov>"]
-description = "Separate/classify a subduction zone earthquake catalog into sub-catalogs: crustal, interface, intraslab."
+description = "Separate/classify a subduction zone earthquake catalog into sub-catalogs: crustal, interface, intraslab, mantle, outer-rise."
 homepage = "https://code.usgs.gov/ghsc/neic/utilities/neic-catalog-segregation"
 include = [
   "LICENSE.md"
@@ -27,6 +27,7 @@ classify_catalog = "neic_catalog_separation.classify_catalog:cli"
 classify_fetch_mt = "neic_catalog_separation.utils.fetch_mt:cli"
 classify_separate_csv = "neic_catalog_separation.utils.separate_csv:cli"
 classify_calculate_bvalue = "neic_catalog_separation.utils.calculate_bvalue:cli"
+classify_redistribute_unknowns = "neic_catalog_separation.utils.redistribute_unknowns:main"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"

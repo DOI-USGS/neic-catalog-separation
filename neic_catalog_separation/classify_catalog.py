@@ -61,8 +61,8 @@ def classify_catalog(
 ) -> None:
     """Reads in files and sets up arguments to the function classify_earthquake,
     which runs in parallel and determines probability that an event occurred in
-    the upper plate (crustal), lower plate (intraslab), or along the subduction
-    interface.
+    the upper plate (crustal), lower plate (intraslab), along the subduction
+    interface, in the mantle, or in the outer-rise region.
     """
     top_dir = pathlib.Path(__file__).parent.resolve()
     data_dir = top_dir / "data"
