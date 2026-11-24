@@ -19,7 +19,7 @@ def classify(
     config: dict,
     nshm: bool,
 ) -> dict:
-    """Determine probability that an event occurred in the upper plate (crustal), lower plate (intraslab), or along the subduction interface
+    """Determine probability that an event occurred in the upper plate (crustal), lower plate (intraslab), along the subduction interface, in the mantle, or in the outer-rise region.
     Args:
         earthquake (dict): dictionary of earthquake parameters (id, longitude, latitude, depth, S1, D1, R1, Ppl, Tpl)
         slab1: Slab2 model region
@@ -27,7 +27,7 @@ def classify(
         moho_depth: Depth of Moho (km)
         seismogenic_depth: Seismogenic depth of interface (km).
         config (dict): name of config file.
-        nshm (boolean): whether or not the input catalog is a USGS NSHM catalog (if True, then events outside of the slab2 regions will be classified as outer-rise instead of not being calssfied)
+        nshm (boolean): whether or not the input catalog is a USGS NSHM catalog (if True, then events outside of the slab2 regions will be classified as outer-rise instead of not being classified)
     Returns:
         Dictionary with classification values.
     """
@@ -55,7 +55,7 @@ def classify(
         slab_closest = slab1
 
     (
-        interface_depth_eq,
+        top_slab_depth_eq,
         slab_strike_eq,
         slab_dip_eq,
         slab_thickness_eq,
@@ -63,7 +63,7 @@ def classify(
     ) = slab_closest.get_values(lat=eq_lat, lon=eq_lon)
     moho_depth_eq = moho_depth.get_value(lat=eq_lat, lon=eq_lon)
 
-    # determine deep_limit for interface earthquakes (deep seismogenic limit + tolerance (buffer/wiggle room))
+    # determine deep seismogenic zone limit (deep seismogenic limit + tolerance (buffer/wiggle room))
     sz_deep, sz_rake = seismogenic_depth.get_values(
         slab_region=slab_closest.region, nshm=nshm
     )
@@ -77,10 +77,10 @@ def classify(
 
     # If an EQ occurs in a slab region where there is a vertical/titled/overturned slab, then the published slab2 sup csv file must be used
     # find nearest lon,lat to EQ lon,lat and extract the corresponding tilted slab depth, strike, and dip
-    if np.isnan(interface_depth_eq):
+    if np.isnan(top_slab_depth_eq):
         if slab_closest.region in ["man", "ker", "izu", "sol"]:
             (
-                interface_depth_eq,
+                top_slab_depth_eq,
                 slab_strike_eq,
                 slab_dip_eq,
                 slab_thickness_eq,
@@ -96,9 +96,9 @@ def classify(
     eq_category = EqType.UNKNOWN
 
     # if depth is still nan
-    if np.isnan(interface_depth_eq):
+    if np.isnan(top_slab_depth_eq):
         # data below is written to output file, so setting to a nonsensical number here that may be overwritten
-        interface_depth_eq = NO_VALUE
+        top_slab_depth_eq = NO_VALUE
         slab_strike_eq = NO_VALUE
         slab_dip_eq = NO_VALUE
         slab_uncertainty_eq = NO_VALUE
@@ -168,14 +168,14 @@ def classify(
         # Calculate the probability that the EQ occurred along the interface given the
         # EQ location and depth to slab +/- a tolerance (buffer) value around the slab
         p_interface_shallow = funcs.get_probability(
-            x=eq_depth - interface_depth_eq,
+            x=eq_depth - top_slab_depth_eq,
             x1=-slab_uncertainty_eq + config["p_interface_shallow"]["x1"],
             x2=config["p_interface_shallow"]["x2"],
             p1=0.0,
             p2=1.0,
         )
         p_interface_deep = funcs.get_probability(
-            x=eq_depth - interface_depth_eq,
+            x=eq_depth - top_slab_depth_eq,
             x1=config["p_interface_deep"]["x1"],
             x2=+slab_uncertainty_eq + config["p_interface_deep"]["x2"],
             p1=1.0,
@@ -204,7 +204,7 @@ def classify(
             p_interface_shallow * p_interface_deep * p_interface_sz * p_interface_kagan
         )
 
-        # Crust: Depth relative to Moho.
+        # Crust: Depth relative to Moho
         p_crustal_moho = funcs.get_probability(
             x=eq_depth - moho_depth_eq,
             x1=config["p_crustal"]["x1"],
@@ -212,9 +212,9 @@ def classify(
             p1=1.0,
             p2=0.0,
         )
-        # Crust: Depth relative to interface (top of slab)
+        # Crust: Depth relative to top of slab + uncertainties
         p_crustal_interface = funcs.get_probability(
-            x=eq_depth - interface_depth_eq,
+            x=eq_depth - top_slab_depth_eq,
             x1=-slab_uncertainty_eq + config["p_interface_shallow"]["x1"],
             x2=config["p_interface_shallow"]["x2"],
             p1=1.0,
@@ -222,17 +222,17 @@ def classify(
         )
         p_crustal = p_crustal_moho * p_crustal_interface
 
-        # Intraslab: Depth relative to interface (top of slab)
+        # Intraslab: Depth relative to top of slab + uncertainties
         p_intraslab_shallow = funcs.get_probability(
-            x=eq_depth - interface_depth_eq,
+            x=eq_depth - top_slab_depth_eq,
             x1=-slab_uncertainty_eq + config["p_intraslab_shallow"]["x1"],
             x2=+slab_uncertainty_eq + config["p_intraslab_shallow"]["x2"],
             p1=0.0,
             p2=1.0,
         )
-        # Intraslab: Depth relative to bottom of slab (interface + slab thickness)
+        # Intraslab: Depth relative to bottom of slab + slab thickness + uncertainties
         p_intraslab_deep = funcs.get_probability(
-            x=eq_depth - (interface_depth_eq + slab_thickness_eq),
+            x=eq_depth - (top_slab_depth_eq + slab_thickness_eq),
             x1=-slab_uncertainty_eq + config["p_intraslab_deep"]["x1"],
             x2=+slab_uncertainty_eq + config["p_intraslab_deep"]["x2"],
             p1=1.0,
@@ -250,11 +250,11 @@ def classify(
             else p_intraslab_shallow * p_intraslab_deep
         )
 
-        # Mantle: crust
+        # Mantle
         p_mantle_crust = 1.0 - p_crustal_moho
         p_mantle_interface_shallow = 1.0 - p_interface_shallow
         p_mantle_intraslab_deep = 1.0 - p_intraslab_deep
-        if eq_depth < interface_depth_eq + config["p_interface_shallow"]["x2"]:
+        if eq_depth < top_slab_depth_eq + config["p_interface_shallow"]["x2"]:
             p_mantle = p_mantle_crust * p_mantle_interface_shallow
         else:
             p_mantle = p_mantle_intraslab_deep

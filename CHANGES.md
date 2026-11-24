@@ -8,7 +8,7 @@
   - Reorganize code layout to facilitate use as a library.
     - Separate source and tests.
     - Load data files using path relative to main driver.
-  - Use concurent.futures.ProcessPoolExecutor for parallel processing with single earthquake passed to each worker. This also maintains the same order for the earthquakes in the input catalog and output classification.
+  - Use concurrent.futures.ProcessPoolExecutor for parallel processing with single earthquake passed to each worker. This also maintains the same order for the earthquakes in the input catalog and output classification.
   - Switch configuration file from config syntax to YAML (automatic type recognition).
   - Switch from pandas to polars for reading/writing CSV files.
   - Changed catalog header (id_no -> id, lat -> latitude, lon -> longitude).
@@ -24,3 +24,5 @@
   - Take into account slab depth uncertainty.
   - Take into account slab thickness.
   - Add the option to include uncertainty to account for earthquake location uncertainty, as well as slab and crust uncertainties by specifying crustal, interface, and intraslab tolerance values in the `subduction.yml` config file.
+  - Add `classify_redistribute_unknowns` utility script.
+  - Add tests for the utility scripts (`classify_fetch_mt`, `classify_separate_csv`, `classify_calculate_bvalue`, `classify_redistribute_unknowns`).

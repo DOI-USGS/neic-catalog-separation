@@ -18,6 +18,7 @@ Sample slices:
 
 import dataclasses
 import pathlib
+import warnings
 
 import numpy
 import polars
@@ -28,6 +29,7 @@ COLORS = {
     "subduction_intraslab": "#00ff00",
     "subduction_outerrise": "#ff0000",
     "mantle": "#f5deb3",
+    "unknown": "#ffc0cb",
 }
 
 
@@ -57,7 +59,7 @@ def rgb_to_hex(rgb):
 def mix_colors(c0: tuple, c1: tuple):
     """Mix colors 2/3 c0 and 1/3 c1.
 
-    Ags:
+    Args:
         c0: First color as tuple of 3 ints (weight is 2/3)
         c1: Second color as tuple of 3 ints (weight is 1/3)
     Returns:
@@ -408,7 +410,15 @@ class PlotSlice:
             "matplotlib_extras.size-paper",
             "matplotlib_extras.color-darkbg",
         )
-        pyplot.style.use(styles)
+        # The matplotlib_extras styles are optional (the package is not required by
+        # this project). Use the default matplotlib style if they are not installed.
+        try:
+            pyplot.style.use(styles)
+        except OSError:
+            warnings.warn(
+                "matplotlib_extras styles not found; using the default matplotlib style.",
+                stacklevel=2,
+            )
 
         fig_height = 4.0
         fig_width = 10.0

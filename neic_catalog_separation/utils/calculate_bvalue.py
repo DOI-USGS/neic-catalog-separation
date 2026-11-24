@@ -17,21 +17,33 @@ def calculate_bvalue(
     show_plot: bool = True,
 ):
     """
-    Calulate b-value and goodness of fit for a given earthquake catalog
+    Calculate b-value and goodness of fit for a given earthquake catalog
 
-    bValueInfo.xyz (output file): output data with b-value and related values
-    bvalue.png (figure): Plot of b-value and goodness of fit
+    <catalog>_bvalue.json (output file): output data with b-value and related values
+    <catalog>_bvalue.pdf (figure, only with show_plot): Plot of b-value and goodness of fit
 
 
     Args:
-        catalog_filename: Name of earthquake catalog file, must include column 'magnitude'.
+        catalog_filename: Name of earthquake catalog file, must include column
+            'magnitude' (or 'mag', as in the output of classify_catalog).
         mc_est: Starting/estimate Mc (magnitude of completeness)
         bin_size: Earthquake bin size
+        show_plot: If True, also save the plot of the b-value fit.
     """
-    eq_magnitude = polars.read_csv(catalog_filename)["magnitude"].to_numpy()
+    catalog_filename = pathlib.Path(catalog_filename)
+    catalog = polars.read_csv(catalog_filename, infer_schema_length=None)
+    for column in ("magnitude", "mag"):
+        if column in catalog.columns:
+            break
+    else:
+        raise ValueError(
+            f"Catalog {catalog_filename} must have a column 'magnitude' (or 'mag')."
+        )
+    eq_magnitude = catalog[column].cast(polars.Float64).to_numpy()
 
-    if not eq_magnitude.any():
+    if np.isnan(eq_magnitude).all():
         # No magnitudes
+        print("No magnitudes found in catalog.")
         return
 
     stats, mag_bins = calculate_ww2000(
@@ -49,9 +61,9 @@ def calculate_bvalue(
     print(f"Shi and Bolt b-value error: {stats['error_sb']}")
 
     # save results to JSON file
-    filename = catalog_filename.replace(".csv", "_bvalue.json")
+    filename = catalog_filename.with_name(catalog_filename.stem + "_bvalue.json")
     with open(filename, "w", encoding="utf-8") as outfile:
-        json.dump(stats, outfile)
+        json.dump({key: float(value) for key, value in stats.items()}, outfile)
 
     if show_plot:
         plot(
@@ -76,7 +88,6 @@ def calculate_ww2000(mags: np.ndarray, mc_est: float, bin_size: float) -> tuple:
         mc: The calculated minimum magnitude of complete recording.
         bvalue: The calculated b value associated with mc.
         avalue: The calculated a value associated with mc.
-        lval: A synthetic Frequency Magnitude Distribution (FMD) determined using bvalue and avalue.
         mag_bins: A list of magnitudes used for binning.
         std_dev: The calculated standard deviation of bvalue.
     """
@@ -156,12 +167,10 @@ def calculate_ww2000(mags: np.ndarray, mc_est: float, bin_size: float) -> tuple:
         "mc": mag_bins[idx],
         "b_value": b_value[idx],
         "a_value": a_value[idx],
-        "lval": lval,
         "std_dev": std_dev[idx],
         "residual": residual[idx],
         "error_sb": error_sb[idx],
     }
-    lval = 10.0 ** (a_value - b_value * mag_bins)
     mag_bins = np.arange(0, max_mag + bin_size / 2.0, bin_size)
 
     return (stats, mag_bins)
@@ -172,70 +181,63 @@ def plot(
 ):
     """
     Plot b-value and goodness-of-fit (gof)
+
+    The figure is saved as <catalog>_bvalue.pdf.
+
     Args:
-        mag (numpy array): Magnitudes
-        mc (numpy array of floats): Predicted Mc
-        bins (numpy array): bings
-        bval (numpy array of floats): Calculated b-value
-        gof (numpy array of floats): Calculated goodness-of-fit
-        f_name (str): name of input magnitude file
-    Returns:
-        bvalue.png (figure): Plot of b-value and goodness of fit
+        mags (numpy array): Magnitudes
+        mag_bins (numpy array): Magnitude bins (bin centers)
+        stats (dict): Results from calculate_ww2000 (including 'gof')
+        catalog_filename: Name of input catalog file
     """
-    # count the number of events in each bin & make some plots:
+    catalog_filename = pathlib.Path(catalog_filename)
     rmag = mags[~np.isnan(mags)]
-    rmag = np.around(rmag, 1)
     mc = stats["mc"]
     b_value = stats["b_value"]
+    mcvalr = np.around(mc, 1)
 
-    mcvalr = np.around(stats["mc"], 1)
+    # count the number of events in each bin
+    bin_size = mag_bins[1] - mag_bins[0]
+    bin_index = np.rint(rmag / bin_size).astype(int)
+    bin_index = bin_index[(bin_index >= 0) & (bin_index < len(mag_bins))]
+    count = np.bincount(bin_index, minlength=len(mag_bins)).astype(float)
 
-    index = []
-    count = np.zeros(len(mag_bins))
-
-    for i in range(len(rmag)):
-        for j in range(len(mag_bins)):
-            if rmag[i] == mag_bins[j]:
-                count[j] = count[j] + 1
-            if np.around(mag_bins[j], 1) == mcvalr:
-                index = (
-                    j  # Index where in the mag_bins the Magnitude of completeness is
-                )
+    # Index of the bin containing the magnitude of completeness
+    index = int(np.argmin(np.abs(mag_bins - mcvalr)))
 
     # Make the b-value line
     x = np.arange(mcvalr, 8.0, 0.1)
     if count[index] != 0:
         line = x * -1 * b_value + (np.log10(count[index]) + mcvalr * b_value)
     else:
-        up = 0
-        down = 0
-        while count[index + up] == 0:
-            up = up + 1
-        while count[index - down] == 0:
-            down = down + 1
-        line = x * -1 * b_value + (
-            np.log10((count[index + up] + count[index - down]) / 2) + mc * b_value
-        )
+        # use the average of the nearest non-empty bins above and below Mc
+        above = np.nonzero(count[index:])[0]
+        below = np.nonzero(count[: index + 1])[0]
+        neighbors = []
+        if len(above):
+            neighbors.append(count[index + above[0]])
+        if len(below):
+            neighbors.append(count[below[-1]])
+        line = x * -1 * b_value + (np.log10(np.mean(neighbors)) + mc * b_value)
 
     # Make b-value and goodness of fit plot
-    figure = plt.figure(figsize=(10, 6), dpi=120, frameon=True)
-    ax = figure.axes()
+    figure, ax = plt.subplots(figsize=(10, 6), dpi=120)
     ax.plot(x, line, "k")
-    ax.avline(mc, "g:")  # Vertical cut off for magnitude of completeness
-    ax.plot(mag_bins, np.log10(count), "k.")  # plot number of EQs in each bin
-    ax.text(6, 0.75 * np.log10(max(count)), f"b-value = {b_value}", fontsize=12)
-    ax.text(
-        6, 1.00 * np.log10(max(count)), f"Goodness-of-Fit = {stats['gof']}", fontsize=12
-    )
-    ax.title(f"b-value for {catalog_filename}")
-    ax.xlabel("Magnitude", fontsize=11)
-    ax.ylabel("Number of Earthquakes", fontsize=11)
+    ax.axvline(mc, color="g", linestyle=":")  # cut off for magnitude of completeness
+    nonzero = count > 0
+    ax.plot(mag_bins[nonzero], np.log10(count[nonzero]), "k.")  # number of EQs per bin
+    ymax = np.log10(count.max())
+    ax.text(6, 0.75 * ymax, f"b-value = {b_value:.2f}", fontsize=12)
+    ax.text(6, 1.00 * ymax, f"Goodness-of-Fit = {stats['gof']:.1f}", fontsize=12)
+    ax.set_title(f"b-value for {catalog_filename.name}")
+    ax.set_xlabel("Magnitude", fontsize=11)
+    ax.set_ylabel("Number of Earthquakes", fontsize=11)
     ytic = [0, 1, 2, 3]
-    logtic = [r"$10^0$", r"$10^1$", r"$10^2$", r"$10^3$"]
-    ax.yticks(ytic, logtic)
+    ax.set_yticks(ytic, [rf"$10^{tic}$" for tic in ytic])
     ax.grid(True)
-    filename = catalog_filename.replace(".csv", "_bvalue.pdf")
-    plt.savefig(filename)
+    filename = catalog_filename.with_name(catalog_filename.stem + "_bvalue.pdf")
+    figure.savefig(filename)
+    plt.close(figure)
 
 
 def cli():

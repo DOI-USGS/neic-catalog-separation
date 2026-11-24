@@ -1,4 +1,4 @@
-"""Input and output utility finctions."""
+"""Input and output utility functions."""
 
 # stdlib
 import pathlib
